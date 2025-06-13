@@ -1,0 +1,475 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Plan {
+  id            String         @id @default(uuid())
+  name          String
+  description   String?
+  price         Float
+  currency      String         @default("CAD")
+  billingCycle  BillingCycle
+  maxUsers      Int
+  features      Json?
+  isActive      Boolean        @default(true)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  subscriptions Subscription[]
+}
+
+model Subscription {
+  id            String             @id @default(uuid())
+  laboratoryId  String
+  planId        String
+  startDate     DateTime
+  endDate       DateTime
+  status        SubscriptionStatus
+  maxUsers      Int
+  paymentMethod String?
+  autoRenew     Boolean            @default(true)
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  payments      Payment[]
+  laboratory    Laboratory         @relation(fields: [laboratoryId], references: [id], onDelete: Cascade)
+  plan          Plan               @relation(fields: [planId], references: [id])
+
+  @@index([laboratoryId])
+}
+
+model Payment {
+  id             String        @id @default(uuid())
+  subscriptionId String
+  amount         Float
+  currency       String        @default("CAD")
+  paymentDate    DateTime
+  paymentMethod  String
+  transactionId  String?
+  status         PaymentStatus
+  invoiceNumber  String?
+  notes          String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  subscription   Subscription  @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@index([subscriptionId])
+}
+
+model Laboratory {
+  id            String           @id @default(uuid())
+  name          String
+  username      String
+  position      String
+  description   String?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  animals       Animal[]
+  animalTypes   AnimalType[]
+  experiments   Experiment[]
+  subscriptions Subscription[]
+  users         UserLaboratory[]
+  invitations   Invitation[]     @relation("LaboratoryInvitations")
+}
+
+model User {
+  id              String           @id @default(uuid())
+  email           String           @unique
+  address         String?
+  contactPhone    String?
+  firstName       String?
+  lastName        String?
+  institution     String?
+  password        String
+  confirmedEmail  Boolean          @default(false)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  animalRecords   AnimalRecord[]
+  experiments     Experiment[]
+  notifications   Notification[]
+  tasks           Task[]
+  laboratories    UserLaboratory[]
+  invitations     Invitation[]     @relation("UserInvitations")
+}
+
+model UserLaboratory {
+  id              String       @id @default(uuid())
+  userId          String
+  laboratoryId    String
+  role            Role
+  joinedAt        DateTime   @default(now())
+  invitedBy       String? 
+  accessStatus    AccessStatus @default(ACTIVE)
+  accessStartDate DateTime     @default(now())
+  accessEndDate   DateTime?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  laboratory      Laboratory   @relation(fields: [laboratoryId], references: [id], onDelete: Cascade)
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, laboratoryId])
+}
+
+model Invitation {
+  id           String            @id @default(uuid())
+  email        String
+  code         String
+  laboratoryId String
+  invitedBy    String
+  role         Role              @default(MEMBER)
+  token        String            @unique
+  expiresAt    DateTime
+  status       InvitationStatus  @default(PENDING)
+  createdAt    DateTime          @default(now())
+  usedAt       DateTime?
+  laboratory   Laboratory        @relation("LaboratoryInvitations", fields: [laboratoryId], references: [id], onDelete: Cascade)
+  inviter      User              @relation("UserInvitations", fields: [invitedBy], references: [id])
+
+  @@unique([email, laboratoryId])
+}
+
+model VerificationCode {
+  id        String   @id @default(uuid())
+  email     String
+  code      String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model AnimalType {
+  id                String             @id @default(uuid())
+  name              String
+  laboratoryId      String
+  description       String?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  animals           Animal[]
+  laboratory        Laboratory         @relation(fields: [laboratoryId], references: [id], onDelete: Cascade)
+  breedingProtocols BreedingProtocol[]
+  customFields      CustomField[]
+
+  @@unique([name, laboratoryId])
+}
+
+model CustomField {
+  id           String             @id @default(uuid())
+  name         String
+  fieldType    FieldType
+  isRequired   Boolean            @default(false)
+  defaultValue String?
+  description  String?
+  animalTypeId String
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  animalType   AnimalType         @relation(fields: [animalTypeId], references: [id], onDelete: Cascade)
+  customValues CustomFieldValue[]
+
+  @@unique([name, animalTypeId])
+}
+
+model Animal {
+  id                String             @id @default(uuid())
+  identifier        String
+  name              String?
+  animalTypeId      String
+  laboratoryId      String
+  birthDate         DateTime?
+  acquisitionDate   DateTime           @default(now())
+  sex               Sex?
+  strain            String?
+  genotype          String?
+  status            AnimalStatus       @default(ACTIVE)
+  location          String?
+  origin            String?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  animalType        AnimalType         @relation(fields: [animalTypeId], references: [id])
+  laboratory        Laboratory         @relation(fields: [laboratoryId], references: [id])
+  photos            AnimalPhoto[]
+  records           AnimalRecord[]
+  fatherBreedings   Breeding[]         @relation("Father")
+  motherBreedings   Breeding[]         @relation("Mother")
+  customFields      CustomFieldValue[]
+  experimentAnimals ExperimentAnimal[]
+  parents           Breeding[]         @relation("Offspring")
+
+  @@unique([identifier, laboratoryId])
+}
+
+model CustomFieldValue {
+  id            String      @id @default(uuid())
+  value         String
+  animalId      String
+  customFieldId String
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  animal        Animal      @relation(fields: [animalId], references: [id], onDelete: Cascade)
+  customField   CustomField @relation(fields: [customFieldId], references: [id], onDelete: Cascade)
+
+  @@unique([animalId, customFieldId])
+}
+
+model AnimalRecord {
+  id            String         @id @default(uuid())
+  animalId      String
+  recordType    RecordType
+  date          DateTime       @default(now())
+  createdById   String
+  temperature   Float?
+  weight        Float?
+  feedIntake    Float?
+  waterIntake   Float?
+  activityLevel ActivityLevel?
+  notes         String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  animal        Animal         @relation(fields: [animalId], references: [id], onDelete: Cascade)
+  createdBy     User           @relation(fields: [createdById], references: [id])
+  measurements  Measurement[]
+  photos        RecordPhoto[]
+}
+
+model Measurement {
+  id        String       @id @default(uuid())
+  recordId  String
+  parameter String
+  value     Float
+  unit      String?
+  createdAt DateTime     @default(now())
+  record    AnimalRecord @relation(fields: [recordId], references: [id], onDelete: Cascade)
+}
+
+model RecordPhoto {
+  id        String       @id @default(uuid())
+  recordId  String
+  imageUrl  String
+  caption   String?
+  createdAt DateTime     @default(now())
+  record    AnimalRecord @relation(fields: [recordId], references: [id], onDelete: Cascade)
+}
+
+model AnimalPhoto {
+  id        String   @id @default(uuid())
+  animalId  String
+  imageUrl  String
+  caption   String?
+  isMain    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  animal    Animal   @relation(fields: [animalId], references: [id], onDelete: Cascade)
+}
+
+model Breeding {
+  id         String            @id @default(uuid())
+  motherId   String
+  fatherId   String
+  protocolId String?
+  startDate  DateTime
+  endDate    DateTime?
+  status     BreedingStatus    @default(ACTIVE)
+  notes      String?
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+  father     Animal            @relation("Father", fields: [fatherId], references: [id])
+  mother     Animal            @relation("Mother", fields: [motherId], references: [id])
+  protocol   BreedingProtocol? @relation(fields: [protocolId], references: [id])
+  offspring  Animal[]          @relation("Offspring")
+}
+
+model BreedingProtocol {
+  id           String     @id @default(uuid())
+  name         String
+  animalTypeId String
+  description  String?
+  instructions String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  breedings    Breeding[]
+  animalType   AnimalType @relation(fields: [animalTypeId], references: [id])
+}
+
+model Experiment {
+  id           String             @id @default(uuid())
+  title        String
+  description  String?
+  laboratoryId String
+  startDate    DateTime
+  endDate      DateTime?
+  status       ExperimentStatus   @default(PLANNED)
+  createdById  String
+  protocol     String?
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  createdBy    User               @relation(fields: [createdById], references: [id])
+  laboratory   Laboratory         @relation(fields: [laboratoryId], references: [id])
+  animals      ExperimentAnimal[]
+  tasks        Task[]
+}
+
+model ExperimentAnimal {
+  id           String     @id @default(uuid())
+  experimentId String
+  animalId     String
+  notes        String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  animal       Animal     @relation(fields: [animalId], references: [id])
+  experiment   Experiment @relation(fields: [experimentId], references: [id], onDelete: Cascade)
+
+  @@unique([experimentId, animalId])
+}
+
+model Task {
+  id           String       @id @default(uuid())
+  title        String
+  description  String?
+  assignedToId String
+  experimentId String?
+  dueDate      DateTime?
+  status       TaskStatus   @default(PENDING)
+  priority     TaskPriority @default(MEDIUM)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  assignedTo   User         @relation(fields: [assignedToId], references: [id])
+  experiment   Experiment?  @relation(fields: [experimentId], references: [id])
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  title     String
+  message   String
+  isRead    Boolean          @default(false)
+  type      NotificationType
+  createdAt DateTime         @default(now())
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum BillingCycle {
+  MONTHLY
+  YEARLY
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  EXPIRED
+  CANCELED
+  TRIAL
+  PENDING
+}
+
+enum PaymentStatus {
+  COMPLETED
+  FAILED
+  REFUNDED
+  PENDING
+}
+
+enum Role {
+  VETERINARIAN
+  RESEARCHER
+  TECHNICIAN
+  DIRECTOR
+  STUDENT
+  MEMBER
+  OWNER
+  ADMIN
+  GUEST
+}
+
+enum AccessStatus {
+  ACTIVE
+  SUSPENDED
+  REVOKED
+  PENDING
+}
+
+enum FieldType {
+  TEXT
+  NUMBER
+  BOOLEAN
+  DATE
+  DROPDOWN
+  MULTISELECT
+}
+
+enum Sex {
+  MALE
+  FEMALE
+  UNKNOWN
+}
+
+enum AnimalStatus {
+  ACTIVE
+  BREEDING
+  QUARANTINE
+  EXPERIMENT
+  RETIRED
+  DECEASED
+  TRANSFERRED
+}
+
+enum RecordType {
+  ROUTINE_CHECK
+  MEDICATION
+  SAMPLING
+  OBSERVATION
+  TREATMENT
+  EMERGENCY
+}
+
+enum ActivityLevel {
+  VERY_LOW
+  LOW
+  NORMAL
+  HIGH
+  VERY_HIGH
+}
+
+enum BreedingStatus {
+  PLANNED
+  ACTIVE
+  SUCCESSFUL
+  FAILED
+  CANCELED
+}
+
+enum ExperimentStatus {
+  PLANNED
+  ACTIVE
+  PAUSED
+  COMPLETED
+  CANCELLED
+}
+
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum NotificationType {
+  SYSTEM
+  TASK
+  EXPERIMENT
+  ANIMAL_ALERT
+  BREEDING
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  EXPIRED
+  REVOKED
+}

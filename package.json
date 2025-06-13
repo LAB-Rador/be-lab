@@ -1,39 +1,68 @@
 {
   "name": "ts-express-template",
   "version": "1.0.0",
+  "type": "module",
   "description": "",
   "main": "index.js",
   "scripts": {
+    "dev": "nodemon --exec ts-node src/index.ts",
     "test": "jest --detectOpenHandles --colors",
-    "lint": "eslint src/** tests/** --fix --cache",
+    "lint": "eslint 'src/**/*.{js,ts}' 'tests/**/*.{js,ts}' --fix --cache",
     "build": "rimraf ./build && tsc",
     "start": "ts-node-dev --respawn --transpileOnly src/index.ts",
-    "start:prod": "npm run build && node ./build/index.js"
+    "start:prod": "npm run build && node ./build/index.js",
+    "prisma:db:pull": "npx prisma db pull",
+    "prisma:studio": "npx prisma studio",
+    "prisma:generate": "npx prisma generate",
+    "prisma:db:push": "npx prisma db push",
+    "prisma:db:seed": "npx prisma db seed",
+    "prisma:migrate:init": "npx prisma migrate dev --name init",
+    "prisma:migrate:reset": "npx prisma migrate reset",
+    "seed": "ts-node ./prisma/seed.ts",
+    "db:setup": "npx prisma generate && npx prisma db push && npx prisma db seed"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@eslint/js": "^9.29.0",
+    "@types/compression": "^1.8.0",
+    "@types/cors": "^2.8.18",
+    "@types/express": "^4.17.22",
     "@types/jest": "^25.2.1",
-    "@typescript-eslint/eslint-plugin": "^2.26.0",
-    "@typescript-eslint/parser": "^2.26.0",
-    "eslint": "^6.8.0",
-    "eslint-config-airbnb-base": "^14.1.0",
+    "@types/jsonwebtoken": "^9.0.9",
+    "@types/node": "^22.15.23",
+    "@typescript-eslint/eslint-plugin": "^8.34.0",
+    "@typescript-eslint/parser": "^8.34.0",
+    "eslint": "^9.28.0",
+    "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-import": "^2.20.2",
     "husky": "^4.2.3",
     "jest": "^25.2.7",
     "jest-html-reporters": "^1.2.1",
+    "nodemon": "^3.1.10",
     "rimraf": "^3.0.2",
     "ts-jest": "^25.3.1",
     "ts-node-dev": "^1.0.0-pre.44",
-    "typescript": "^3.8.3"
+    "typescript": "^5.8.3"
   },
   "dependencies": {
-    "@types/express": "^4.17.4",
-    "express": "^4.17.1"
+    "@prisma/client": "^6.8.2",
+    "bcryptjs": "^3.0.2",
+    "compression": "^1.8.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^4.21.2",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "prisma": "^6.8.2",
+    "resend": "^4.5.1"
   },
   "husky": {
     "hooks": {
       "pre-commit": "npm run lint"
     }
+  },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
   }
 }

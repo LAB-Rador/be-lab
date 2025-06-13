@@ -1,5 +1,11 @@
 node_modules
 .vscode/
 .eslintcache
+.env
 build
 jest_html_reporters.html
+/generated/prisma
+
+# keys
+private.pem
+public.pem
