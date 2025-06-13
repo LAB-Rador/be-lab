@@ -8,18 +8,15 @@ import userLaboratoryRouter from './routes/userLaboratory.router';
 const app = express();
 const port = process.env.PORT || 3001;
 
-app.options('*', cors());
+const corsOptions = {
+  origin: process.env.FRONTEND_URL || 'https://lab-rador-assist.vercel.app',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+};
 
-app.use(
-    cors({
-        origin: [
-            process.env.FRONTEND_URL || 'https://lab-rador-assist.vercel.app',
-        ],
-        credentials: true, // Allow cookies and auth headers
-        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-        allowedHeaders: ['Content-Type', 'Authorization'],
-    }),
-);
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions)); // теперь точно одинаковая конфигурация
 
 app.use(express.json());
 
