@@ -11,7 +11,7 @@ const port = process.env.PORT || 3001;
 app.use(
     cors({
         origin: [
-            process.env.FRONTEND_URL as string || 'https://lab-rador-assist.vercel.app/',
+            process.env.FRONTEND_URL as string || 'https://lab-rador-assist.vercel.app',
         ],
         credentials: true, // Allow cookies and auth headers
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
