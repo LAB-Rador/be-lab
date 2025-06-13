@@ -11,9 +11,7 @@ const port = process.env.PORT || 3001;
 app.use(
     cors({
         origin: [
-            'http://localhost:3000', // Next.js default port
-            'http://localhost:3001', // Your backend port
-            'http://127.0.0.1:3000',
+            process.env.FRONTEND_URL as string || "https://lab-rador-assist.vercel.app/",
         ],
         credentials: true, // Allow cookies and auth headers
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
