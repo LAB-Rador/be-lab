@@ -7,8 +7,8 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci --omit=dev --legacy-peer-deps
+# Install ALL dependencies (including dev) for building
+RUN npm ci --legacy-peer-deps
 
 # Copy source code
 COPY . .
@@ -18,6 +18,9 @@ RUN npx prisma generate
 
 # Build the application
 RUN npm run build
+
+# Remove dev dependencies to reduce image size
+RUN npm ci --omit=dev --legacy-peer-deps && npm cache clean --force
 
 # Expose the port
 EXPOSE 3000
