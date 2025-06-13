@@ -5,7 +5,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon --exec ts-node src/index.ts",
+    "dev": "nodemon --exec \"node --import tsx/esm\" src/index.ts",
     "test": "jest --detectOpenHandles --colors",
     "lint": "eslint 'src/**/*.{js,ts}' 'tests/**/*.{js,ts}' --fix --cache",
     "build": "rimraf ./build && tsc",
@@ -42,7 +42,9 @@
     "nodemon": "^3.1.10",
     "rimraf": "^3.0.2",
     "ts-jest": "^25.3.1",
+    "ts-node": "^10.9.2",
     "ts-node-dev": "^1.0.0-pre.44",
+    "tsx": "^4.20.3",
     "typescript": "^5.8.3"
   },
   "dependencies": {
