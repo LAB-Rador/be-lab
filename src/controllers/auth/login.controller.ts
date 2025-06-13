@@ -31,7 +31,7 @@ export const login = async (req: Request, res: Response) => {
                 contactPhone: user.contactPhone,
                 address: user.address,
             },
-            process.env.PRIVATE_KEY_PATH!,
+            process.env.PRIVATE_KEY!.replace(/\\n/g, '\n'),
             { expiresIn: '1d' },
         );
 
@@ -47,7 +47,7 @@ export const login = async (req: Request, res: Response) => {
                 contactPhone: user.contactPhone,
                 address: user.address,
             },
-            process.env.PRIVATE_KEY_PATH!,
+            process.env.PRIVATE_KEY!.replace(/\\n/g, '\n'),
             { expiresIn: '7d' },
         );
 
