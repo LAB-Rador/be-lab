@@ -36,7 +36,7 @@ export const createLaboratory = async (req: Request, res: Response) => {
             data: { name, ...labData },
         });
 
-        const userLab = await prismaClient.userLaboratory.create({
+        await prismaClient.userLaboratory.create({
             data: {
                 userId,
                 laboratoryId: laboratory.id,
