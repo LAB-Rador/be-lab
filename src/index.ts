@@ -2,8 +2,15 @@ import userLaboratoryRouter from './routes/userLaboratory.router.js';
 import laboratoryRouter from './routes/laboratory.router.js';
 import userRouter from './routes/user.router.js';
 import authRouter from './routes/auth.router.js';
+import prismaClient from './lib/prisma.js';
 import express from 'express';
 import cors from 'cors';
+
+
+// Graceful shutdown handler
+process.on('SIGTERM', async () => {
+  await prismaClient.$disconnect();
+});
 
 const app = express();
 const port = process.env.PORT || 8080;
