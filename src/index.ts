@@ -1,7 +1,7 @@
-import userLaboratoryRouter from './routes/userLaboratory.router';
-import laboratoryRouter from './routes/laboratory.router';
-import userRouter from './routes/user.router';
-import authRouter from './routes/auth.router';
+import userLaboratoryRouter from './routes/userLaboratory.router.js';
+import laboratoryRouter from './routes/laboratory.router.js';
+import userRouter from './routes/user.router.js';
+import authRouter from './routes/auth.router.js';
 import express from 'express';
 import cors from 'cors';
 

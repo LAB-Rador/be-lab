@@ -1,9 +1,9 @@
 import { Router } from 'express';
 
-import { createResetCode, resetPassword } from '../controllers/auth/resetPassword.controller';
-import { validateToken } from '../controllers/auth/validateToken.controller';
-import { confirmEmail } from '../controllers/auth/email.controller';
-import { login } from '../controllers/auth/login.controller';
+import { createResetCode, resetPassword } from '../controllers/auth/resetPassword.controller.js';
+import { validateToken } from '../controllers/auth/validateToken.controller.js';
+import { confirmEmail } from '../controllers/auth/email.controller.js';
+import { login } from '../controllers/auth/login.controller.js';
 
 const authRouter = Router();
 

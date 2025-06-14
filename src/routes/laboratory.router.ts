@@ -2,7 +2,7 @@ import { Router } from 'express';
 
 import {
     createLaboratory,
-} from '../controllers/laboratory/create.controller';
+} from '../controllers/laboratory/create.controller.js';
 
 const laboratoryRouter = Router();
 

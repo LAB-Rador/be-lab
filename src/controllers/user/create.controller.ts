@@ -1,8 +1,8 @@
 import type { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
-import sendVarificationCode from '../../services/email/verification.service';
-import generateCode from '../../lib/codeGenerator';
-import prismaClient from '../../lib/prisma';
+import sendVarificationCode from '../../services/email/verification.service.js';
+import generateCode from '../../lib/codeGenerator.js';
+import prismaClient from '../../lib/prisma.js';
 
 export const createUser = async (req: Request, res: Response) => {
     try {

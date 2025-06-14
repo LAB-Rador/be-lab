@@ -5,10 +5,10 @@ import {
     getUserById,
     updateUser,
     deleteUser,
-} from '../controllers/user/user.controller';
+} from '../controllers/user/user.controller.js';
 import {
     createUser,
-} from '../controllers/user/create.controller';
+} from '../controllers/user/create.controller.js';
 
 const userRouter = Router();
 

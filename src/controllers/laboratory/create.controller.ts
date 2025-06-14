@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
 import { Role } from '@prisma/client';
-import prismaClient from '../../lib/prisma';
+import prismaClient from '../../lib/prisma.js';
 
 export const createLaboratory = async (req: Request, res: Response) => {
     const { userId, name, ...labData } = req.body;

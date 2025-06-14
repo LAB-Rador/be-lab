@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
 import { AccessStatus } from '@prisma/client';
-import prismaClient from '../../lib/prisma';
+import prismaClient from '../../lib/prisma.js';
 
 export const getAllLaboratories = async (req: Request, res: Response) => {
     try {
