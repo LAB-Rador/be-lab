@@ -20,10 +20,10 @@ RUN npx prisma generate
 RUN npm run build
 
 # Remove dev dependencies to reduce image size
-RUN npm ci --omit=dev --legacy-peer-deps && npm cache clean --force
+# RUN npm ci --omit=dev --legacy-peer-deps && npm cache clean --force
 
 # Expose the port
-EXPOSE 3000
+EXPOSE 3001
 
 # Start the application
 CMD ["npm", "run", "start:prod"]
