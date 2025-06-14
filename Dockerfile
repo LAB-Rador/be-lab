@@ -14,7 +14,7 @@ RUN npm ci --legacy-peer-deps
 COPY . .
 
 # Generate Prisma client
-#RUN npx prisma generate
+RUN npx prisma generate
 
 # Build the application
 RUN npm run build
