@@ -23,8 +23,6 @@
     "resolveJsonModule": true,
     "typeRoots": ["./node_modules/@types"],
     "types": ["node"],
-    "allowImportingTsExtensions": false,
-    "noEmit": false
   },
   "ts-node": {
     "esm": true,

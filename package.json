@@ -8,7 +8,7 @@
     "dev": "nodemon --exec \"node --import tsx/esm\" src/index.ts",
     "test": "jest --detectOpenHandles --colors",
     "lint": "eslint 'src/**/*.{js,ts}' 'tests/**/*.{js,ts}' --fix --cache",
-    "build": "npm install && rm -rf ./build && tsc",
+    "build": "rm -rf ./build && tsc",
     "start": "ts-node-dev --respawn --transpileOnly src/index.ts",
     "start:prod": "npm run build && node ./build/index.js",
     "prisma:db:pull": "npx prisma db pull",
