@@ -12,7 +12,7 @@ export const validateToken = async (req: Request, res: Response) => {
         });
     }
 
-    jwt.verify(token, process.env.PRIVATE_KEY!.replace(/\\n/g, '\n'), (err, decoded) => {
+    jwt.verify(token, process.env.PRIVATE_KEY!, (err, decoded) => {
         if (err) {
             return res.status(401).json({ error: 'Token is invalid' });
         }
