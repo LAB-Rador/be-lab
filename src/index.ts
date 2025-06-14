@@ -1,65 +1,39 @@
-import express from 'express';
-import cors from 'cors';
+import userLaboratoryRouter from './routes/userLaboratory.router';
+import laboratoryRouter from './routes/laboratory.router';
 import userRouter from './routes/user.router';
 import authRouter from './routes/auth.router';
-import laboratoryRouter from './routes/laboratory.router';
-import userLaboratoryRouter from './routes/userLaboratory.router';
+import express from 'express';
+import cors from 'cors';
 
 const app = express();
 const port = process.env.PORT || 3001;
 
-const allowedOrigins = [
-  'https://lab-rador-assist.vercel.app',
-  'http://localhost:3000',
-  'http://localhost:3001',
-  // добавьте другие домены если нужно
-];
+const allowedOrigins = process.env.FRONTEND_URL 
+  ? process.env.FRONTEND_URL
+  : [
+      'https://lab-rador-assist.vercel.app',
+      'http://localhost:3000',
+      'http://localhost:3001'
+    ];
 
 const corsOptions = {
-  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
-      // Разрешить запросы без origin (например, мобильные приложения)
-      if (!origin) return callback(null, true);
-      
-      if (allowedOrigins.includes(origin)) {
-          callback(null, true);
-      } else {
-          console.log('CORS blocked origin:', origin);
-          callback(new Error('Not allowed by CORS'));
-      }
-  },
+  origin: allowedOrigins,
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: [
-      'Content-Type', 
-      'Authorization', 
-      'X-Requested-With',
-      'Accept',
-      'Origin'
+    'Content-Type', 
+    'Authorization', 
+    'X-Requested-With',
+    'Accept',
+    'Origin'
   ],
-  exposedHeaders: ['Content-Length', 'X-Foo', 'X-Bar'],
-  maxAge: 86400, // 24 часа для preflight cache
+  preflightContinue: false,
+  optionsSuccessStatus: 200
 };
 
 app.use(cors(corsOptions));
 // Обработка preflight запросов для всех роутов
-// Явная обработка preflight запросов
-app.options('*', (req, res) => {
-  console.log('OPTIONS request received for:', req.path);
-  console.log('Origin:', req.headers.origin);
-  
-  // Устанавливаем заголовки вручную
-  const origin = req.headers.origin;
-  if (origin && allowedOrigins.includes(origin)) {
-      res.header('Access-Control-Allow-Origin', origin);
-  }
-  
-  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS,PATCH');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  res.header('Access-Control-Max-Age', '86400');
-  
-  res.status(200).end();
-});
+app.options('*', cors(corsOptions));
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
