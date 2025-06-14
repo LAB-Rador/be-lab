@@ -23,7 +23,7 @@ RUN npm run build
 # RUN npm ci --omit=dev --legacy-peer-deps && npm cache clean --force
 
 # Expose the port
-EXPOSE 3001
+EXPOSE 8080
 
 # Start the application
 CMD ["npm", "run", "start:prod"]
