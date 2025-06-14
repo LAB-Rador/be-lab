@@ -12,7 +12,15 @@ export const validateToken = async (req: Request, res: Response) => {
         });
     }
 
-    jwt.verify(token, process.env.PRIVATE_KEY!.replace(/\\n/g, '\n'), (err, decoded) => {
+    const secret = process.env.PRIVATE_KEY;
+    if (!secret || typeof secret !== 'string' || secret.trim() === '') {
+        return res.status(500).json({
+            success: false,
+            error: 'Server configuration error: PRIVATE_KEY missing',
+        });
+    }
+
+    jwt.verify(token, secret, (err, decoded) => {
         if (err) {
             return res.status(401).json({ error: 'Token is invalid' });
         }

@@ -19,6 +19,11 @@ export const login = async (req: Request, res: Response) => {
             });
         }
 
+        const secret = process.env.PRIVATE_KEY;
+        if (!secret || typeof secret !== 'string' || secret.trim() === '') {
+            throw new Error('PRIVATE_KEY is not configured or invalid');
+        }
+
         const accessToken = jwt.sign(
             {
                 userId: user.id,
@@ -31,10 +36,10 @@ export const login = async (req: Request, res: Response) => {
                 contactPhone: user.contactPhone,
                 address: user.address,
             },
-            process.env.PRIVATE_KEY!.replace(/\\n/g, '\n'),
+            secret,
             { expiresIn: '1d' },
         );
-
+        // .replace(/\\n/g, '\n')
         const refreshToken = jwt.sign(
             {
                 userId: user.id,
@@ -47,7 +52,7 @@ export const login = async (req: Request, res: Response) => {
                 contactPhone: user.contactPhone,
                 address: user.address,
             },
-            process.env.PRIVATE_KEY!.replace(/\\n/g, '\n'),
+            secret,
             { expiresIn: '7d' },
         );
 
