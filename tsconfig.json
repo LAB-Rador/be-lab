@@ -22,7 +22,9 @@
     "baseUrl": "./",
     "resolveJsonModule": true,
     "typeRoots": ["./node_modules/@types"],
-    "types": ["node"]
+    "types": ["node"],
+    "allowImportingTsExtensions": false,
+    "noEmit": false
   },
   "ts-node": {
     "esm": true,
