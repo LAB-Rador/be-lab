@@ -10,7 +10,6 @@ const port = process.env.PORT || 3001;
 
 const allowedOrigins = [
   'https://lab-rador-assist.vercel.app',
-  'https://lab-radar-assist.vercel.app', // исправленный домен из логов
   'http://localhost:3000',
   'http://localhost:3001',
   // добавьте другие домены если нужно
@@ -43,7 +42,24 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 // Обработка preflight запросов для всех роутов
-app.options('*', cors(corsOptions));
+// Явная обработка preflight запросов
+app.options('*', (req, res) => {
+  console.log('OPTIONS request received for:', req.path);
+  console.log('Origin:', req.headers.origin);
+  
+  // Устанавливаем заголовки вручную
+  const origin = req.headers.origin;
+  if (origin && allowedOrigins.includes(origin)) {
+      res.header('Access-Control-Allow-Origin', origin);
+  }
+  
+  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS,PATCH');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Max-Age', '86400');
+  
+  res.status(200).end();
+});
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
