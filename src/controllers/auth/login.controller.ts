@@ -31,10 +31,10 @@ export const login = async (req: Request, res: Response) => {
                 contactPhone: user.contactPhone,
                 address: user.address,
             },
-            process.env.PRIVATE_KEY!.replace(/\\n/g, '\n'),
+            process.env.PRIVATE_KEY!,
             { expiresIn: '1d' },
         );
-
+        // .replace(/\\n/g, '\n')
         const refreshToken = jwt.sign(
             {
                 userId: user.id,
@@ -47,7 +47,7 @@ export const login = async (req: Request, res: Response) => {
                 contactPhone: user.contactPhone,
                 address: user.address,
             },
-            process.env.PRIVATE_KEY!.replace(/\\n/g, '\n'),
+            process.env.PRIVATE_KEY!,
             { expiresIn: '7d' },
         );
 
