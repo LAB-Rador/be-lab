@@ -20,7 +20,7 @@ export const validateToken = async (req: Request, res: Response) => {
         });
     }
 
-    jwt.verify(token, secret, (err, decoded) => {
+    jwt.verify(token, secret, { algorithms: ['RS256'] }, (err, decoded) => {
         if (err) {
             return res.status(401).json({ error: 'Token is invalid' });
         }
