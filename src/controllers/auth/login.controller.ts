@@ -37,7 +37,7 @@ export const login = async (req: Request, res: Response) => {
                 address: user.address,
             },
             secret,
-            { expiresIn: '1d' },
+            { algorithm: 'RS256', expiresIn: '1d' },
         );
         // .replace(/\\n/g, '\n')
         const refreshToken = jwt.sign(
@@ -53,7 +53,7 @@ export const login = async (req: Request, res: Response) => {
                 address: user.address,
             },
             secret,
-            { expiresIn: '7d' },
+            { algorithm: 'RS256', expiresIn: '7d' },
         );
 
         const laboratory = await authClient.userLaboratory.findFirst({

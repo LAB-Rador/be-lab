@@ -12,7 +12,7 @@ export const validateToken = async (req: Request, res: Response) => {
         });
     }
 
-    const secret = process.env.PRIVATE_KEY;
+    const secret = process.env.PUBLIC_KEY;
     if (!secret || typeof secret !== 'string' || secret.trim() === '') {
         return res.status(500).json({
             success: false,
