@@ -1,33 +1,41 @@
-import prismaClient  from '../src/lib/prisma';
+import { PrismaClient } from '@prisma/client';
 
-const prisma = prismaClient;
+// Создаем новый экземпляр для seed операций с прямым соединением
+const prisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: process.env.DIRECT_URL, // Используем прямое соединение вместо pooled
+    },
+  },
+});
 
 async function cleanup() {
   console.log('🧹 Очистка существующих данных...');
 
-  // Удаляем в правильном порядке (обратном к созданию)
-  await prisma.payment.deleteMany({});
-  await prisma.breeding.deleteMany({});
-  await prisma.breedingProtocol.deleteMany({});
-  await prisma.notification.deleteMany({});
-  await prisma.task.deleteMany({});
-  await prisma.experimentAnimal.deleteMany({});
-  await prisma.experiment.deleteMany({});
-  await prisma.measurement.deleteMany({});
-  await prisma.recordPhoto.deleteMany({});
-  await prisma.animalRecord.deleteMany({});
-  await prisma.animalPhoto.deleteMany({});
-  await prisma.customFieldValue.deleteMany({});
-  await prisma.animal.deleteMany({});
-  await prisma.customField.deleteMany({});
-  await prisma.animalType.deleteMany({});
-  await prisma.userLaboratory.deleteMany({});
-  await prisma.user.deleteMany({});
-  await prisma.subscription.deleteMany({});
-  await prisma.laboratory.deleteMany({});
-  await prisma.plan.deleteMany({});
+  try {
+    // Удаляем в правильном порядке (обратном к созданию)
+    const tables = [
+      'payment', 'breeding', 'breedingProtocol', 'notification', 
+      'task', 'experimentAnimal', 'experiment', 'measurement', 
+      'recordPhoto', 'animalRecord', 'animalPhoto', 'customFieldValue', 
+      'animal', 'customField', 'animalType', 'userLaboratory', 
+      'user', 'subscription', 'laboratory', 'plan'
+    ];
 
-  console.log('✅ Очистка завершена');
+    for (const table of tables) {
+      try {
+        await prisma[table].deleteMany();
+        console.log(`   ✓ Очищена таблица ${table}`);
+      } catch (error) {
+        console.log(`   ⚠ Таблица ${table} уже пуста или не существует`);
+      }
+    }
+
+    console.log('✅ Очистка завершена');
+  } catch (error) {
+    console.error('❌ Ошибка при очистке:', error);
+    // Продолжаем выполнение, даже если очистка частично не удалась
+  }
 }
 
 async function main() {
@@ -485,6 +493,7 @@ async function main() {
       data: {
         title: 'Взвешивание животных группы A',
         description: 'Ежедневное взвешивание мышей в экспериментальной группе',
+        laboratoryId: laboratory1.id,
         assignedToId: user2.id,
         experimentId: experiment1.id,
         dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000), // завтра
@@ -496,6 +505,7 @@ async function main() {
       data: {
         title: 'Подготовка протокола эксперимента',
         description: 'Финализация протокола токсикологического исследования',
+        laboratoryId: laboratory2.id,
         assignedToId: user3.id,
         experimentId: experiment2.id,
         dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000), // +5 дней
@@ -507,6 +517,7 @@ async function main() {
       data: {
         title: 'Обновление базы данных животных',
         description: 'Внести данные о новых поступлениях в систему',
+        laboratoryId: laboratory2.id,
         assignedToId: user4.id,
         dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // +3 дня
         status: 'PENDING',

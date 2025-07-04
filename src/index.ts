@@ -1,5 +1,8 @@
 import userLaboratoryRouter from './routes/userLaboratory.router.js';
+import experimentCountRouter from './routes/experiment.router.js';
 import laboratoryRouter from './routes/laboratory.router.js';
+import taskCountRouter from './routes/task.router.js';
+import animalRouter from './routes/animal.router.js';
 import userRouter from './routes/user.router.js';
 import authRouter from './routes/auth.router.js';
 import prismaClient from './lib/prisma.js';
@@ -18,9 +21,9 @@ const port = process.env.PORT || 8080;
 const allowedOrigins = process.env.FRONTEND_URL 
   ? process.env.FRONTEND_URL
   : [
-      'https://lab-rador-assist.vercel.app',
-      'http://localhost:3000',
-      'http://localhost:3001'
+    'https://lab-rador-assist.vercel.app',
+    'http://localhost:3000',
+    'http://localhost:3001',
     ];
 
 const corsOptions = {
@@ -51,7 +54,10 @@ app.get('/health', (req, res) => {
 });
 
 app.use('/api/laboratories', userLaboratoryRouter);
+app.use('/api/experimentsCount', experimentCountRouter);
 app.use('/api/laboratory', laboratoryRouter);
+app.use('/api/tasksCount', taskCountRouter);
+app.use('/api/animals', animalRouter);
 app.use('/api/users', userRouter);
 app.use('/api/auth', authRouter);
 

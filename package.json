@@ -18,7 +18,7 @@
     "prisma:db:seed": "npx prisma db seed",
     "prisma:migrate:init": "npx prisma migrate dev --name init",
     "prisma:migrate:reset": "npx prisma migrate reset",
-    "seed": "ts-node ./prisma/seed.ts",
+    "seed": "tsx ./prisma/seed.ts",
     "db:setup": "npx prisma generate && npx prisma db push && npx prisma db seed"
   },
   "author": "",
@@ -65,6 +65,6 @@
     }
   },
   "prisma": {
-    "seed": "ts-node prisma/seed.ts"
+    "seed": "tsx prisma/seed.ts"
   }
 }

@@ -74,6 +74,7 @@ model Laboratory {
   subscriptions Subscription[]
   users         UserLaboratory[]
   invitations   Invitation[]     @relation("LaboratoryInvitations")
+  tasks         Task[]
 }
 
 model User {
@@ -326,9 +327,11 @@ model Task {
   id           String       @id @default(uuid())
   title        String
   description  String?
+  laboratoryId String
   assignedToId String
   experimentId String?
   dueDate      DateTime?
+  laboratory   Laboratory   @relation(fields: [laboratoryId], references: [id])
   status       TaskStatus   @default(PENDING)
   priority     TaskPriority @default(MEDIUM)
   createdAt    DateTime     @default(now())
