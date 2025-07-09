@@ -53,8 +53,8 @@ app.get('/health', (req, res) => {
     res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
-app.use('/api/laboratories', userLaboratoryRouter);
 app.use('/api/experimentsCount', experimentCountRouter);
+app.use('/api/laboratories', userLaboratoryRouter);
 app.use('/api/laboratory', laboratoryRouter);
 app.use('/api/tasksCount', taskCountRouter);
 app.use('/api/animals', animalRouter);
