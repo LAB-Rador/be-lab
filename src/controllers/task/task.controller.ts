@@ -4,11 +4,11 @@ import { AccessStatus, TaskStatus } from '@prisma/client';
 
 const taskClient = prismaClient.task;
 
-export const getAllPendingTaskCount = async (req: Request, res: Response) => {
+export const getAllPendingTasks = async (req: Request, res: Response) => {
     try {
         const { userId, labId } = req.params;
         
-        const tasksCount = await taskClient.count({
+        const tasksCount = await taskClient.findMany({
             where: {
                 laboratory: {
                     name: labId,

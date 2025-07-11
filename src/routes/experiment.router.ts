@@ -1,8 +1,8 @@
 import { Router } from 'express';
-import { getAllExperimentCount } from '../controllers/experiment/experiment.controller.js';
+import { getAllExperiments } from '../controllers/experiment/experiment.controller.js';
 
-const experimentCountRouter = Router();
+const experimentRouter = Router();
 
-experimentCountRouter.get('/:userId/:labId', getAllExperimentCount);
+experimentRouter.get('/:userId/:labId', getAllExperiments);
 
-export default experimentCountRouter;
+export default experimentRouter;

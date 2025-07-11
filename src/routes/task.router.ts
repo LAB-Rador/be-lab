@@ -1,8 +1,8 @@
 import { Router } from 'express';
-import { getAllPendingTaskCount } from '../controllers/task/task.controller.js';
+import { getAllPendingTasks } from '../controllers/task/task.controller.js';
 
-const taskCountRouter = Router();
+const taskRouter = Router();
 
-taskCountRouter.get('/:userId/:labId', getAllPendingTaskCount);
+taskRouter.get('/:userId/:labId', getAllPendingTasks);
 
-export default taskCountRouter;
+export default taskRouter;

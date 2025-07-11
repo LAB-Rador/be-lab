@@ -4,11 +4,11 @@ import { AccessStatus } from '@prisma/client';
 
 const experimentClient = prismaClient.experiment;
 
-export const getAllExperimentCount = async (req: Request, res: Response) => {
+export const getAllExperiments = async (req: Request, res: Response) => {
     try {
         const { userId, labId } = req.params;
 
-        const experimentsCount = await experimentClient.count({
+        const experimentsCount = await experimentClient.findMany({
             where: {
                 laboratory: {
                     name: labId,

@@ -1,8 +1,8 @@
 import userLaboratoryRouter from './routes/userLaboratory.router.js';
-import experimentCountRouter from './routes/experiment.router.js';
 import laboratoryRouter from './routes/laboratory.router.js';
-import taskCountRouter from './routes/task.router.js';
+import experimentRouter from './routes/experiment.router.js';
 import animalRouter from './routes/animal.router.js';
+import taskRouter from './routes/task.router.js';
 import userRouter from './routes/user.router.js';
 import authRouter from './routes/auth.router.js';
 import prismaClient from './lib/prisma.js';
@@ -53,11 +53,11 @@ app.get('/health', (req, res) => {
     res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
-app.use('/api/experimentsCount', experimentCountRouter);
 app.use('/api/laboratories', userLaboratoryRouter);
+app.use('/api/experiments', experimentRouter);
 app.use('/api/laboratory', laboratoryRouter);
-app.use('/api/tasksCount', taskCountRouter);
 app.use('/api/animals', animalRouter);
+app.use('/api/tasks', taskRouter);
 app.use('/api/users', userRouter);
 app.use('/api/auth', authRouter);
 
