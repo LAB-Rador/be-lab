@@ -7,7 +7,7 @@ import { getAnimalEnums } from '../controllers/animal/animal-enums.controller.js
 
 const animalRouter = Router();
 
-animalRouter.get('/:userId/:labId', getAllAnimals);
+animalRouter.get('/:userId/:labId/:rows/:page/:filters', getAllAnimals);
 animalRouter.post('/', addAnimal);
 
 // Animal types routes
