@@ -1,7 +1,13 @@
-import prismaClient from '../src/lib/prisma.js';
+import { PrismaClient } from '@prisma/client';
 
 // Создаем новый экземпляр для seed операций с прямым соединением
-const prisma = prismaClient;
+const prisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: process.env.DIRECT_URL, // Используем прямое соединение вместо pooled
+    },
+  },
+});
 
 async function cleanup() {
   console.log('🧹 Очистка существующих данных...');
