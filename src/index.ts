@@ -6,7 +6,6 @@ import taskRouter from './routes/task.router.js';
 import userRouter from './routes/user.router.js';
 import authRouter from './routes/auth.router.js';
 import prismaClient from './lib/prisma.js';
-import { setTimeout } from 'timers';
 import express from 'express';
 import cors from 'cors';
 
@@ -86,48 +85,6 @@ app.use(
   },
 );
 
-const server = app.listen(port, () => {
-  console.log(`Listening on port ${port}`);
-});
-
-const gracefulShutdown = async (signal: string) => {
-  console.log(`Received ${signal}. Shutting down gracefully...`);
-  
-  // Закрываем сервер (перестаем принимать новые соединения)
-  server.close(async () => {
-    console.log('HTTP server closed');
-    
-    try {
-      // Отключаем Prisma
-      await prismaClient.$disconnect();
-      console.log('Prisma client disconnected');
-      
-      // Завершаем процесс
-      process.exit(0);
-    } catch (error) {
-      console.error('Error during shutdown:', error);
-      process.exit(1);
-    }
-  });
-  
-  // Принудительное завершение через 10 секунд
-  setTimeout(() => {
-    console.error('Forcing shutdown after 10 seconds');
-    process.exit(1);
-  }, 10000);
-};
-
-// Обработчики сигналов
-process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
-process.on('SIGINT', () => gracefulShutdown('SIGINT'));
-
-// Обработка необработанных ошибок
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-  gracefulShutdown('unhandledRejection');
-});
-
-process.on('uncaughtException', (error) => {
-  console.error('Uncaught Exception:', error);
-  gracefulShutdown('uncaughtException');
+app.listen(port, () => {
+    console.log(`Listening on port ${port}`);
 });
