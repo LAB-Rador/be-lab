@@ -172,7 +172,7 @@ export const editAnimal = async (req: Request, res: Response) => {
                 strain: strain || null,
                 origin: origin || null,
                 name: name || null,
-                animalTypeId: animalTypeId,
+                animalTypeId: finalAnimalTypeId,
                 laboratoryId: laboratory.id,
                 identifier: identifier,
                 updatedAt: new Date(),
