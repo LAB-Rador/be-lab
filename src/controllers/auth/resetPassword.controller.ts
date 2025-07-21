@@ -2,7 +2,7 @@ import type { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import sendResetResetConfirmationCode from '../../services/email/reset.service.js';
 import generateCode from '../../lib/codeGenerator.js';
-import prismaClient from '../../lib/prisma.js';
+import { prismaClient } from '../../lib/prisma.js';
 
 const userClient = prismaClient;
 

@@ -1,5 +1,5 @@
 import { Sex, AnimalStatus, AnimalType, FieldType, AccessStatus } from '@prisma/client';
-import prismaClient from '../../lib/prisma.js';
+import { prismaClient } from '../../lib/prisma.js';
 import { Request, Response } from 'express';
 
 interface CustomFieldInput {

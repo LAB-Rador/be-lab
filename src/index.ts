@@ -5,6 +5,7 @@ import animalRouter from './routes/animal.router.js';
 import taskRouter from './routes/task.router.js';
 import userRouter from './routes/user.router.js';
 import authRouter from './routes/auth.router.js';
+import { prismaClient } from './lib/prisma.js';
 import express from 'express';
 import cors from 'cors';
 
@@ -80,4 +81,17 @@ app.use(
 
 app.listen(port, () => {
     console.log(`Listening on port ${port}`);
+});
+
+// Graceful shutdown
+process.on('SIGINT', async () => {
+  console.log('Shutting down gracefully...');
+  await prismaClient.$disconnect();
+  process.exit(0);
+});
+
+process.on('SIGTERM', async () => {
+  console.log('Shutting down gracefully...');
+  await prismaClient.$disconnect();
+  process.exit(0);
 });

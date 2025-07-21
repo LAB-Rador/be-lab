@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import prismaClient from '../../lib/prisma.js';
+import { prismaClient } from '../../lib/prisma.js';
 import { AccessStatus, TaskStatus } from '@prisma/client';
 
 const taskClient = prismaClient.task;
