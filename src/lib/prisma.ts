@@ -7,28 +7,18 @@ declare global {
 
 let prismaClient: PrismaClient;
 
-if (process.env.NODE_ENV === 'production') {
-  prismaClient = new PrismaClient({
-    log: ['error'],
+// Всегда используем глобальную переменную для предотвращения множественных экземпляров
+if (!global.__prisma) {
+  global.__prisma = new PrismaClient({
+    log: process.env.NODE_ENV === 'production' ? ['error'] : ['query', 'error'],
     datasources: {
       db: {
         url: process.env.DATABASE_URL
       }
     }
   });
-} else {
-  // Prevent multiple instances during development hot-reload
-  if (!global.__prisma) {
-    global.__prisma = new PrismaClient({
-      log: ['query', 'error'],
-      datasources: {
-        db: {
-          url: process.env.DATABASE_URL
-        }
-      }
-    });
-  }
-  prismaClient = global.__prisma;
 }
+
+prismaClient = global.__prisma;
 
 export { prismaClient };
