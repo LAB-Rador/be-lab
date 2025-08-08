@@ -1,4 +1,5 @@
 import userLaboratoryRouter from './routes/userLaboratory.router.js';
+import animalRecordRouter from './routes/animalRecord.router.js';
 import laboratoryRouter from './routes/laboratory.router.js';
 import experimentRouter from './routes/experiment.router.js';
 import animalRouter from './routes/animal.router.js';
@@ -15,7 +16,7 @@ const port = process.env.PORT || 8080;
 const allowedOrigins = process.env.FRONTEND_URL 
   ? process.env.FRONTEND_URL
   : [
-    'https://lab-rador-assist.vercel.app',
+      'https://lab-rador-assist.vercel.app',
     ];
 
 const corsOptions = {
@@ -46,6 +47,7 @@ app.get('/health', (req, res) => {
 });
 
 app.use('/api/laboratories', userLaboratoryRouter);
+app.use('/api/animal-records', animalRecordRouter);
 app.use('/api/experiments', experimentRouter);
 app.use('/api/laboratory', laboratoryRouter);
 app.use('/api/animals', animalRouter);

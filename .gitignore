@@ -2,6 +2,7 @@ node_modules
 .vscode/
 .eslintcache
 .env
+.idea
 build
 jest_html_reporters.html
 /generated/prisma
