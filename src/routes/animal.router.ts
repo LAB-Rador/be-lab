@@ -1,6 +1,6 @@
 import { getAnimalTypes, getAnimalTypeById } from '../controllers/animal/animal-types.controller.js';
 import { createAnimalType } from '../controllers/animal/create-animal-type.controller.js';
-import { getUniqueAnimalById } from 'src/controllers/animal/get.unique.animal.byId.js';
+import { getUniqueAnimalById } from '../controllers/animal/get.unique.animal.byId.js';
 import { getAnimalEnums } from '../controllers/animal/animal-enums.controller.js';
 import { editAnimal } from '../controllers/animal/edit.animal.controller.js';
 import { getAllAnimals } from '../controllers/animal/animals.controller.js';
