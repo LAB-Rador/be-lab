@@ -9,7 +9,6 @@ export const getAllAnimals = async (req: Request, res: Response) => {
         const { userId, labId, rows, page, filters } = req.params;
         const rowsNumber = parseInt(rows);
         const pageNumber = parseInt(page);
-        // Парсим фильтры если они есть
         let parsedFilters = null;
         if (filters && filters !== 'null' && filters !== 'undefined') {
             try {
@@ -19,22 +18,19 @@ export const getAllAnimals = async (req: Request, res: Response) => {
             }
         }
         
-        // Базовое условие для фильтрации
         const whereCondition: any = {
             laboratory: {
-                name: labId, // labId это имя лаборатории
+                name: labId,
                 users: {
                     some: {
-                        userId: userId, // проверяем что пользователь принадлежит к этой лаборатории
-                        accessStatus: AccessStatus.ACTIVE // и имеет активный доступ
+                        userId: userId,
+                        accessStatus: AccessStatus.ACTIVE
                     }
                 }
             }
         };
         
-        // Добавляем фильтры если они есть
         if (parsedFilters) {
-            // Фильтр по типам животных
             if (parsedFilters.animalTypes && Array.isArray(parsedFilters.animalTypes) && parsedFilters.animalTypes.length > 0) {
                 const validTypes = parsedFilters.animalTypes.filter((type: any) => type && typeof type === 'string');
                 if (validTypes.length > 0) {
@@ -46,7 +42,6 @@ export const getAllAnimals = async (req: Request, res: Response) => {
                 }
             }
             
-            // Фильтр по статусам
             if (parsedFilters.statuses && Array.isArray(parsedFilters.statuses) && parsedFilters.statuses.length > 0) {
                 const validStatuses = parsedFilters.statuses.filter((status: any) => status && typeof status === 'string');
                 if (validStatuses.length > 0) {
@@ -56,12 +51,10 @@ export const getAllAnimals = async (req: Request, res: Response) => {
                 }
             }
             
-            // Фильтр по полу
             if (parsedFilters.sex && parsedFilters.sex !== null && typeof parsedFilters.sex === 'string') {
                 whereCondition.sex = parsedFilters.sex;
             }
             
-            // Фильтр по возрастным группам
             if (parsedFilters.ageGroups && Array.isArray(parsedFilters.ageGroups) && parsedFilters.ageGroups.length > 0) {
                 const now = new Date();
                 const ageConditions = [];
@@ -69,7 +62,7 @@ export const getAllAnimals = async (req: Request, res: Response) => {
                 for (const ageGroup of parsedFilters.ageGroups) {
                     if (!ageGroup || typeof ageGroup !== 'string') continue;
                     switch (ageGroup) {
-                        case 'JUVENILE': { // 0-3 месяца
+                        case 'JUVENILE': {
                             const juvenileStart = new Date(now);
                             juvenileStart.setMonth(now.getMonth() - 3);
                             ageConditions.push({
@@ -81,7 +74,7 @@ export const getAllAnimals = async (req: Request, res: Response) => {
                             break;
                         }
                             
-                        case 'YOUNG_ADULT': { // 3-6 месяцев
+                        case 'YOUNG_ADULT': {
                             const youngAdultStart = new Date(now);
                             const youngAdultEnd = new Date(now);
                             youngAdultStart.setMonth(now.getMonth() - 6);
@@ -95,7 +88,7 @@ export const getAllAnimals = async (req: Request, res: Response) => {
                             break;
                         }
                             
-                        case 'ADULT': { // 6-9 месяцев
+                        case 'ADULT': {
                             const adultStart = new Date(now);
                             const adultEnd = new Date(now);
                             adultStart.setMonth(now.getMonth() - 9);
@@ -109,7 +102,7 @@ export const getAllAnimals = async (req: Request, res: Response) => {
                             break;
                         }
                             
-                        case 'SENIOR': { // 9+ месяцев
+                        case 'SENIOR': {
                             const seniorEnd = new Date(now);
                             seniorEnd.setMonth(now.getMonth() - 9);
                             ageConditions.push({
@@ -122,14 +115,12 @@ export const getAllAnimals = async (req: Request, res: Response) => {
                     }
                 }
                 
-                // Если есть условия по возрасту, добавляем их через OR
                 if (ageConditions.length > 0) {
                     whereCondition.OR = ageConditions;
                 }
             }
         }
         
-        // Получаем животных с пагинацией
         const animals = await animalsClient.findMany({
             where: whereCondition,
             skip: (pageNumber - 1) * rowsNumber,
@@ -150,16 +141,14 @@ export const getAllAnimals = async (req: Request, res: Response) => {
                 }
             },
             orderBy: {
-                createdAt: 'desc' // сортируем по дате создания (новые первыми)
+                createdAt: 'desc'
             }
         });
         
-        // Получаем общее количество записей
         const totalCount = await animalsClient.count({
             where: whereCondition
         });
         
-        // Рассчитываем метаданные пагинации
         const totalPages = Math.ceil(totalCount / rowsNumber);
         const hasNextPage = pageNumber < totalPages;
         const hasPreviousPage = pageNumber > 1;
