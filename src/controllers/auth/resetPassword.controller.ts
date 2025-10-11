@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
-import sendResetResetConfirmationCode from '../../services/email/reset.service.js';
+import sendResetConfirmationCode from '../../services/email/reset.service.js';
 import generateCode from '../../lib/codeGenerator.js';
 import { prismaClient } from '../../lib/prisma.js';
 
@@ -27,11 +27,11 @@ export const createResetCode = async (req: Request, res: Response) => {
             data: {
                 email,
                 code,
-                expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+                expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
             },
         });
 
-        await sendResetResetConfirmationCode(email, code);
+        await sendResetConfirmationCode(email, code);
 
         res.status(201).json({
             success: true,

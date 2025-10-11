@@ -43,7 +43,7 @@ export const createUser = async (req: Request, res: Response) => {
             data: {
                 email: user.email,
                 code,
-                expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+                expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
             },
         });
 
