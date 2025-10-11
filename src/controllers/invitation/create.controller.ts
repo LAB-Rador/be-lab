@@ -1,4 +1,4 @@
-import sendInvitationCode from 'src/services/email/invitation.service.js';
+import sendInvitationCode from '../../services/email/invitation.service.js';
 import generateCode from '../../lib/codeGenerator.js';
 import { prismaClient } from '../../lib/prisma.js';
 import type { Request, Response } from 'express';
