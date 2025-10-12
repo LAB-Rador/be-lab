@@ -30,7 +30,7 @@ export const createInvitation = async (req: Request, res: Response) => {
                 email: email,
                 code: code,
                 role: role,
-                token: 'token',
+                token: code,
             }
         });
 

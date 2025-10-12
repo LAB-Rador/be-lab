@@ -10,17 +10,42 @@ export const getUniqueAnimalById = async (req: Request, res: Response) => {
         const rowsNumber = parseInt(rows);
         const pageNumber = parseInt(page);
 
-        const whereCondition: any = {
-            laboratory: {
-                name: labId,
-                users: {
-                    some: {
-                        userId: userId,
-                        accessStatus: AccessStatus.ACTIVE
-                    }
+        // First check if user has access to this laboratory
+        const userLaboratory = await prismaClient.userLaboratory.findFirst({
+            where: {
+                userId: userId,
+                accessStatus: AccessStatus.ACTIVE,
+                laboratory: {
+                    name: labId
                 }
+            },
+            include: {
+                laboratory: true
             }
+        });
+
+        if (!userLaboratory) {
+            return res.status(403).json({
+                success: false,
+                message: 'Access denied to this laboratory'
+            });
+        }
+
+        const whereCondition: any = {
+            laboratoryId: userLaboratory.laboratory.id
         };
+
+        // const whereCondition: any = {
+        //     laboratory: {
+        //         name: labId,
+        //         users: {
+        //             some: {
+        //                 userId: userId,
+        //                 accessStatus: AccessStatus.ACTIVE
+        //             }
+        //         }
+        //     }
+        // };
 
         const animal = await animalsClient.animal.findUnique({
             where: {
