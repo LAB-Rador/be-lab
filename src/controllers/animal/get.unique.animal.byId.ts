@@ -35,18 +35,6 @@ export const getUniqueAnimalById = async (req: Request, res: Response) => {
             laboratoryId: userLaboratory.laboratory.id
         };
 
-        // const whereCondition: any = {
-        //     laboratory: {
-        //         name: labId,
-        //         users: {
-        //             some: {
-        //                 userId: userId,
-        //                 accessStatus: AccessStatus.ACTIVE
-        //             }
-        //         }
-        //     }
-        // };
-
         const animal = await animalsClient.animal.findUnique({
             where: {
                 id: animalId,
