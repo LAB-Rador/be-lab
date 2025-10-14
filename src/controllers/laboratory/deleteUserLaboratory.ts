@@ -69,6 +69,26 @@ export const deleteLaboratoryMember = async (req: Request, res: Response) => {
             }
         });
 
+        const invitationToDelete = await prismaClient.invitation.findFirst({
+            where: {
+                laboratoryId: ownerLaboratory.laboratory.id,
+                email: memberToDelete.user.email
+            }
+        })
+
+        if (!invitationToDelete) {
+            return res.status(404).json({
+                success: false,
+                message: 'Member not found in this invitation list'
+            });
+        }
+
+        await prismaClient.invitation.delete({
+            where: {
+                id: invitationToDelete.id
+            }
+        })
+
         return res.status(200).json({
             success: true,
             message: `Member ${memberToDelete.user.email} has been successfully removed from laboratory`,
