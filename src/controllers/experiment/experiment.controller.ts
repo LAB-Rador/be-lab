@@ -1,6 +1,6 @@
-import { Request, Response } from 'express';
 import { prismaClient } from '../../lib/prisma.js';
 import { AccessStatus } from '@prisma/client';
+import { Request, Response } from 'express';
 
 const experimentClient = prismaClient.experiment;
 
@@ -8,7 +8,7 @@ export const getAllExperiments = async (req: Request, res: Response) => {
     try {
         const { userId, labId } = req.params;
 
-        const experimentsCount = await experimentClient.findMany({
+        const experiments = await experimentClient.findMany({
             where: {
                 laboratory: {
                     name: labId,
@@ -20,9 +20,14 @@ export const getAllExperiments = async (req: Request, res: Response) => {
                     }
                 }
             },
+            include: {
+                createdBy: {
+                  select: { id: true, email: true, firstName: true, lastName: true }
+                }
+              }
         })
         
-        res.status(200).json({ success: true, data: experimentsCount });
+        res.status(200).json({ success: true, data: experiments });
     } catch (error) {
         console.error('Error fetching experiments:', error);
         res.status(500).json({

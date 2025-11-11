@@ -1,9 +1,10 @@
 import { Request, Response } from 'express';
-import { Sex, AnimalStatus, ActivityLevel, RecordType, Role, AccessStatus } from '@prisma/client';
+import { Sex, AnimalStatus, ActivityLevel, RecordType, Role, AccessStatus, ExperimentStatus } from '@prisma/client';
 
 export const getAnimalEnums = async (req: Request, res: Response) => {
     try {
         const enums = {
+            experimentStatus: Object.values(ExperimentStatus),
             activityLevel: Object.values(ActivityLevel),
             AccessStatus: Object.values(AccessStatus),
             recordType: Object.values(RecordType),
