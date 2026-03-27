@@ -18,6 +18,7 @@ const allowedOrigins = process.env.FRONTEND_URL
   ? process.env.FRONTEND_URL
   : [
       'https://lab-rador-assist.vercel.app',
+      'https://labradorassist.app',
     ];
 
 const corsOptions = {
