@@ -4,13 +4,13 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 export default async function sendResetConfirmationCode(email: string, code: string) {
     await resend.emails.send({
-        from: 'onboarding@resend.dev',
+        from: 'noreply@labradorassist.app',
         to: email,
         subject: 'Your Reset Confirmation Code',
         html: `
             <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
                 <div style="text-align: center; margin-bottom: 30px;">
-                    <img src="https://lab-rador-assist.vercel.app/favicon.ico" alt="Your Logo" width="120" />
+                    <img src="https://labradorassist.app/favicon.ico" alt="Your Logo" width="120" />
                 </div>
                 <h2 style="text-align: center; color: #2d3748;">Welcome back to Lab-Rador Assist</h2>
                 <p style="text-align: center;">Your 6-digit reset confirmation code is:</p>
