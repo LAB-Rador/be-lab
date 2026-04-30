@@ -46,7 +46,14 @@ export const getUniqueExperimentById = async (req: Request, res: Response) => {
                 },
                 animals: {
                     include: {
-                        animal: true,
+                        animal: {
+                            include: {
+                                animalType: true,
+                                laboratory: {
+                                    select: { id: true, name: true },
+                                },
+                            },
+                        },
                     },
                 },
                 tasks: true,
@@ -60,9 +67,19 @@ export const getUniqueExperimentById = async (req: Request, res: Response) => {
             });
         }
 
+        const { animals: experimentAnimalRows, ...experimentRest } = experiment;
+        const data = {
+            ...experimentRest,
+            animals: experimentAnimalRows.map((row) => ({
+                ...row.animal,
+                experimentAnimalId: row.id,
+                experimentNotes: row.notes,
+            })),
+        };
+
         res.status(200).json({
             success: true,
-            data: experiment,
+            data,
         });
     } catch (error) {
         console.error('Error fetching experiment:', error);
