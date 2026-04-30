@@ -4,10 +4,10 @@ import laboratoryRouter from './routes/laboratory.router.js';
 import experimentRouter from './routes/experiment.router.js';
 import invitationRouter from './routes/invitation.router.js';
 import animalRouter from './routes/animal.router.js';
+import publicRouter from './routes/public.router.js';
 import taskRouter from './routes/task.router.js';
 import userRouter from './routes/user.router.js';
 import authRouter from './routes/auth.router.js';
-import publicRouter from './routes/public.router.js';
 import { prismaClient } from './lib/prisma.js';
 import express from 'express';
 import cors from 'cors';
@@ -49,13 +49,13 @@ app.get('/health', (req, res) => {
     res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
-app.use('/api/public', publicRouter);
 app.use('/api/laboratories', userLaboratoryRouter);
 app.use('/api/animal-records', animalRecordRouter);
 app.use('/api/experiments', experimentRouter);
 app.use('/api/laboratory', laboratoryRouter);
 app.use('/api/invitation', invitationRouter);
 app.use('/api/animals', animalRouter);
+app.use('/api/public', publicRouter);
 app.use('/api/tasks', taskRouter);
 app.use('/api/users', userRouter);
 app.use('/api/auth', authRouter);
