@@ -95,6 +95,7 @@ model User {
   tasks           Task[]
   laboratories    UserLaboratory[]
   invitations     Invitation[]     @relation("UserInvitations")
+  experimentMembers ExperimentMember[]
 }
 
 model UserLaboratory {
@@ -308,6 +309,18 @@ model Experiment {
   laboratory   Laboratory         @relation(fields: [laboratoryId], references: [id])
   animals      ExperimentAnimal[]
   tasks        Task[]
+  members      ExperimentMember[]
+}
+
+model ExperimentMember {
+  id           String     @id @default(uuid())
+  experimentId String
+  userId       String
+  createdAt    DateTime   @default(now())
+  experiment   Experiment @relation(fields: [experimentId], references: [id], onDelete: Cascade)
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([experimentId, userId])
 }
 
 model ExperimentAnimal {

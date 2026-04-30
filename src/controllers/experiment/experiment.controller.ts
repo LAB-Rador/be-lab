@@ -15,18 +15,19 @@ export const getAllExperiments = async (req: Request, res: Response) => {
                     users: {
                         some: {
                             userId: userId,
-                            accessStatus: AccessStatus.ACTIVE
-                        }
-                    }
-                }
+                            accessStatus: AccessStatus.ACTIVE,
+                        },
+                    },
+                },
+                OR: [{ createdById: userId }, { members: { some: { userId } } }],
             },
             include: {
                 createdBy: {
-                  select: { id: true, email: true, firstName: true, lastName: true }
-                }
-              }
-        })
-        
+                    select: { id: true, email: true, firstName: true, lastName: true },
+                },
+            },
+        });
+
         res.status(200).json({ success: true, data: experiments });
     } catch (error) {
         console.error('Error fetching experiments:', error);

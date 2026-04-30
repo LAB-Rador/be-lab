@@ -7,6 +7,7 @@ import animalRouter from './routes/animal.router.js';
 import taskRouter from './routes/task.router.js';
 import userRouter from './routes/user.router.js';
 import authRouter from './routes/auth.router.js';
+import publicRouter from './routes/public.router.js';
 import { prismaClient } from './lib/prisma.js';
 import express from 'express';
 import cors from 'cors';
@@ -48,6 +49,7 @@ app.get('/health', (req, res) => {
     res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
+app.use('/api/public', publicRouter);
 app.use('/api/laboratories', userLaboratoryRouter);
 app.use('/api/animal-records', animalRecordRouter);
 app.use('/api/experiments', experimentRouter);

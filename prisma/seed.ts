@@ -16,7 +16,7 @@ async function cleanup() {
     // Удаляем в правильном порядке (обратном к созданию)
     const tables = [
       'payment', 'breeding', 'breedingProtocol', 'notification', 
-      'task', 'experimentAnimal', 'experiment', 'measurement', 
+      'task', 'experimentMember', 'experimentAnimal', 'experiment', 'measurement', 
       'recordPhoto', 'animalRecord', 'animalPhoto', 'customFieldValue', 
       'animal', 'customField', 'animalType', 'userLaboratory', 
       'user', 'subscription', 'laboratory', 'plan'
