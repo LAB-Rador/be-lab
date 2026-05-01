@@ -41,7 +41,7 @@ export const createExperiment = async (req: Request, res: Response) => {
 
         res.status(200).json({
             success: true,
-            data: experiment,
+            data: { ...experiment, animalCount: 0 },
             message: 'Experiment successfully created!'
         });
 

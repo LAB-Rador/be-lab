@@ -39,8 +39,15 @@ export const getAllAnimals = async (req: Request, res: Response) => {
             });
         }
 
+        const includeArchived =
+            req.query.includeArchived === 'true' ||
+            (parsedFilters &&
+                typeof parsedFilters === 'object' &&
+                (parsedFilters as { includeArchived?: boolean }).includeArchived === true);
+
         const whereCondition: any = {
-            laboratoryId: userLaboratory.laboratory.id
+            laboratoryId: userLaboratory.laboratory.id,
+            ...(includeArchived ? {} : { archivedAt: null }),
         };
         
         if (parsedFilters) {

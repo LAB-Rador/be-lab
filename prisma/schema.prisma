@@ -187,6 +187,7 @@ model Animal {
   status            AnimalStatus       @default(ACTIVE)
   location          String?
   origin            String?
+  archivedAt        DateTime?
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
   animalType        AnimalType         @relation(fields: [animalTypeId], references: [id])
@@ -218,6 +219,7 @@ model CustomFieldValue {
 model AnimalRecord {
   id            String         @id @default(uuid())
   animalId      String
+  experimentId  String?
   recordType    RecordType
   date          DateTime       @default(now())
   createdById   String
@@ -230,9 +232,12 @@ model AnimalRecord {
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   animal        Animal         @relation(fields: [animalId], references: [id], onDelete: Cascade)
+  experiment    Experiment?    @relation(fields: [experimentId], references: [id], onDelete: SetNull)
   createdBy     User           @relation(fields: [createdById], references: [id])
   measurements  Measurement[]
   photos        RecordPhoto[]
+
+  @@index([experimentId])
 }
 
 model Measurement {
@@ -303,6 +308,7 @@ model Experiment {
   status       ExperimentStatus   @default(PLANNED)
   createdById  String
   protocol     String?
+  archivedAt   DateTime?
   createdAt    DateTime           @default(now())
   updatedAt    DateTime           @updatedAt
   createdBy    User               @relation(fields: [createdById], references: [id])
@@ -310,6 +316,7 @@ model Experiment {
   animals      ExperimentAnimal[]
   tasks        Task[]
   members      ExperimentMember[]
+  animalRecords AnimalRecord[]
 }
 
 model ExperimentMember {

@@ -75,7 +75,10 @@ export const getExperimentMetrics = async (req: Request, res: Response) => {
         }
 
         const records = await prismaClient.animalRecord.findMany({
-            where: { animalId: { in: animalIds } },
+            where: {
+                animalId: { in: animalIds },
+                experimentId: experimentId,
+            },
             select: {
                 date: true,
                 temperature: true,
