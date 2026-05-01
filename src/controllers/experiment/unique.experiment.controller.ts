@@ -1,6 +1,6 @@
-import { Request, Response } from 'express';
 import { prismaClient } from '../../lib/prisma.js';
 import { AccessStatus } from '@prisma/client';
+import { Request, Response } from 'express';
 
 const memberInclude = (labId: string) => ({
     user: {
@@ -56,7 +56,6 @@ export const getUniqueExperimentById = async (req: Request, res: Response) => {
                         },
                     },
                 },
-                tasks: true,
             },
         });
 
