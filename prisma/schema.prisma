@@ -75,6 +75,8 @@ model Laboratory {
   users         UserLaboratory[]
   invitations   Invitation[]     @relation("LaboratoryInvitations")
   tasks         Task[]
+
+  @@index([name])
 }
 
 model User {
@@ -361,6 +363,12 @@ model Task {
   createdBy    User         @relation("TaskCreator", fields: [createdById], references: [id])
   assignedTo   User         @relation("TaskAssignee", fields: [assignedToId], references: [id])
   experiment   Experiment?  @relation(fields: [experimentId], references: [id])
+
+  @@index([laboratoryId])
+  @@index([experimentId])
+  @@index([laboratoryId, status])
+  @@index([laboratoryId, assignedToId])
+  @@index([laboratoryId, dueDate])
 }
 
 model Notification {
@@ -372,6 +380,8 @@ model Notification {
   type      NotificationType
   createdAt DateTime         @default(now())
   user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
 }
 
 enum BillingCycle {

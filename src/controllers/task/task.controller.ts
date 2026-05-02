@@ -8,7 +8,7 @@ export const getAllPendingTasks = async (req: Request, res: Response) => {
     try {
         const { userId, labId } = req.params;
         
-        const tasksCount = await taskClient.findMany({
+        const tasks = await taskClient.findMany({
             where: {
                 laboratory: {
                     name: labId,
@@ -27,7 +27,7 @@ export const getAllPendingTasks = async (req: Request, res: Response) => {
             },
         })
 
-        res.status(200).json({ success: true, data: tasksCount });
+        res.status(200).json({ success: true, data: tasks });
     } catch (error) {
         console.error('Error fetching tasks:', error);
         res.status(500).json({
