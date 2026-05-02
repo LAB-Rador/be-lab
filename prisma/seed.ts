@@ -494,6 +494,7 @@ async function main() {
         title: 'Взвешивание животных группы A',
         description: 'Ежедневное взвешивание мышей в экспериментальной группе',
         laboratoryId: laboratory1.id,
+        createdById: user1.id,
         assignedToId: user2.id,
         experimentId: experiment1.id,
         dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000), // завтра
@@ -506,6 +507,7 @@ async function main() {
         title: 'Подготовка протокола эксперимента',
         description: 'Финализация протокола токсикологического исследования',
         laboratoryId: laboratory2.id,
+        createdById: user1.id,
         assignedToId: user3.id,
         experimentId: experiment2.id,
         dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000), // +5 дней
@@ -518,6 +520,7 @@ async function main() {
         title: 'Обновление базы данных животных',
         description: 'Внести данные о новых поступлениях в систему',
         laboratoryId: laboratory2.id,
+        createdById: user2.id,
         assignedToId: user4.id,
         dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // +3 дня
         status: 'PENDING',

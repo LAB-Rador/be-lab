@@ -92,7 +92,8 @@ model User {
   animalRecords   AnimalRecord[]
   experiments     Experiment[]
   notifications   Notification[]
-  tasks           Task[]
+  tasksAssigned   Task[]             @relation("TaskAssignee")
+  createdTasks    Task[]             @relation("TaskCreator")
   laboratories    UserLaboratory[]
   invitations     Invitation[]     @relation("UserInvitations")
   experimentMembers ExperimentMember[]
@@ -348,6 +349,7 @@ model Task {
   title        String
   description  String?
   laboratoryId String
+  createdById  String
   assignedToId String
   experimentId String?
   dueDate      DateTime?
@@ -356,7 +358,8 @@ model Task {
   priority     TaskPriority @default(MEDIUM)
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
-  assignedTo   User         @relation(fields: [assignedToId], references: [id])
+  createdBy    User         @relation("TaskCreator", fields: [createdById], references: [id])
+  assignedTo   User         @relation("TaskAssignee", fields: [assignedToId], references: [id])
   experiment   Experiment?  @relation(fields: [experimentId], references: [id])
 }
 

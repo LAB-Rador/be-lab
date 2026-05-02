@@ -1,6 +1,6 @@
-import { Request, Response } from 'express';
-import { prismaClient } from '../../lib/prisma.js';
 import { AccessStatus, TaskStatus } from '@prisma/client';
+import { prismaClient } from '../../lib/prisma.js';
+import { Request, Response } from 'express';
 
 const taskClient = prismaClient.task;
 
@@ -20,6 +20,10 @@ export const getAllPendingTasks = async (req: Request, res: Response) => {
                     }
                 },
                 status: TaskStatus.PENDING
+            },
+            include: {
+                assignedTo: { select: { id: true, email: true, firstName: true, lastName: true } },
+                createdBy: { select: { id: true, email: true, firstName: true, lastName: true } },
             },
         })
 
