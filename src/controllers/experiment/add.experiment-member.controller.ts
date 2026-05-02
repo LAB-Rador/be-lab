@@ -1,6 +1,10 @@
 import { Request, Response } from 'express';
 import { prismaClient } from '../../lib/prisma.js';
 import { AccessStatus } from '@prisma/client';
+import { formatUserDisplayName } from '../../lib/format-user-display-name.js';
+import {
+    sendExperimentMemberAddedEmail,
+} from '../../services/email/experiment-member-notification.service.js';
 
 export const addExperimentMember = async (req: Request, res: Response) => {
     try {
@@ -26,8 +30,10 @@ export const addExperimentMember = async (req: Request, res: Response) => {
             },
             select: {
                 id: true,
+                title: true,
                 createdById: true,
                 laboratoryId: true,
+                laboratory: { select: { name: true } },
             },
         });
 
@@ -75,6 +81,20 @@ export const addExperimentMember = async (req: Request, res: Response) => {
                 },
             },
         });
+
+        const actor = await prismaClient.user.findUnique({
+            where: { id: userId },
+            select: { firstName: true, lastName: true, email: true },
+        });
+
+        if (actor) {
+            void sendExperimentMemberAddedEmail({
+                to: member.user.email,
+                experimentTitle: experiment.title,
+                laboratoryName: experiment.laboratory.name,
+                actor: { displayName: formatUserDisplayName(actor) },
+            }).catch((err) => console.error('Failed to send experiment member added email', err));
+        }
 
         res.status(201).json({ success: true, data: member });
     } catch (error: unknown) {

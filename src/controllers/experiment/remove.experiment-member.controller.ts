@@ -1,6 +1,10 @@
 import { Request, Response } from 'express';
 import { prismaClient } from '../../lib/prisma.js';
 import { AccessStatus } from '@prisma/client';
+import { formatUserDisplayName } from '../../lib/format-user-display-name.js';
+import {
+    sendExperimentMemberRemovedEmail,
+} from '../../services/email/experiment-member-notification.service.js';
 
 export const removeExperimentMember = async (req: Request, res: Response) => {
     try {
@@ -21,7 +25,9 @@ export const removeExperimentMember = async (req: Request, res: Response) => {
             },
             select: {
                 id: true,
+                title: true,
                 createdById: true,
+                laboratory: { select: { name: true } },
             },
         });
 
@@ -39,15 +45,36 @@ export const removeExperimentMember = async (req: Request, res: Response) => {
             return res.status(400).json({ success: false, message: 'Cannot remove the experiment creator' });
         }
 
-        const deleted = await prismaClient.experimentMember.deleteMany({
+        const membershipRow = await prismaClient.experimentMember.findFirst({
             where: {
                 experimentId: experiment.id,
                 userId: targetUserId,
             },
+            include: {
+                user: { select: { email: true, firstName: true, lastName: true } },
+            },
         });
 
-        if (deleted.count === 0) {
+        if (!membershipRow) {
             return res.status(404).json({ success: false, message: 'Member not found on this experiment' });
+        }
+
+        await prismaClient.experimentMember.delete({
+            where: { id: membershipRow.id },
+        });
+
+        const actor = await prismaClient.user.findUnique({
+            where: { id: userId },
+            select: { firstName: true, lastName: true, email: true },
+        });
+
+        if (actor) {
+            void sendExperimentMemberRemovedEmail({
+                to: membershipRow.user.email,
+                experimentTitle: experiment.title,
+                laboratoryName: experiment.laboratory.name,
+                actor: { displayName: formatUserDisplayName(actor) },
+            }).catch((err) => console.error('Failed to send experiment member removed email', err));
         }
 
         res.status(200).json({ success: true, data: { removed: true } });

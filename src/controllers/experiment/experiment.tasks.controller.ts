@@ -1,11 +1,15 @@
 import { AccessStatus, TaskPriority, TaskStatus } from '@prisma/client';
 import { prismaClient } from '../../lib/prisma.js';
 import { Request, Response } from 'express';
+import { formatUserDisplayName } from '../../lib/format-user-display-name.js';
+import { sendTaskAssignedEmail } from '../../services/email/task-assigned-notification.service.js';
 
 type ExperimentGate = {
     id: string;
     laboratoryId: string;
     createdById: string;
+    title: string;
+    laboratory: { name: string };
     members: { userId: string }[];
 };
 
@@ -32,6 +36,8 @@ async function loadExperimentWithAccessGate(
             id: true,
             laboratoryId: true,
             createdById: true,
+            title: true,
+            laboratory: { select: { name: true } },
             members: { select: { userId: true } },
         },
     });
@@ -169,6 +175,21 @@ export const createExperimentTask = async (req: Request, res: Response) => {
             },
         });
 
+        const assigner = await prismaClient.user.findUnique({
+            where: { id: userId },
+            select: { firstName: true, lastName: true, email: true },
+        });
+        if (assigner) {
+            void sendTaskAssignedEmail({
+                to: task.assignedTo.email,
+                taskTitle: task.title,
+                priority: task.priority,
+                experimentTitle: experiment.title,
+                laboratoryName: experiment.laboratory.name,
+                assignerDisplayName: formatUserDisplayName(assigner),
+            }).catch((err) => console.error('Failed to send task assigned email', err));
+        }
+
         res.status(201).json({ success: true, data: task });
     } catch (error) {
         console.error('Error creating experiment task:', error);
@@ -196,7 +217,7 @@ export const updateExperimentTask = async (req: Request, res: Response) => {
                 experimentId: experiment.id,
                 laboratoryId: experiment.laboratoryId,
             },
-            select: { id: true },
+            select: { id: true, assignedToId: true },
         });
 
         if (!existing) {
@@ -271,6 +292,25 @@ export const updateExperimentTask = async (req: Request, res: Response) => {
                 assignedTo: { select: assignedToSelect },
             },
         });
+
+        const assigneeChanged =
+            data.assignedToId !== undefined && data.assignedToId !== existing.assignedToId;
+        if (assigneeChanged) {
+            const assigner = await prismaClient.user.findUnique({
+                where: { id: userId },
+                select: { firstName: true, lastName: true, email: true },
+            });
+            if (assigner) {
+                void sendTaskAssignedEmail({
+                    to: task.assignedTo.email,
+                    taskTitle: task.title,
+                    priority: task.priority,
+                    experimentTitle: experiment.title,
+                    laboratoryName: experiment.laboratory.name,
+                    assignerDisplayName: formatUserDisplayName(assigner),
+                }).catch((err) => console.error('Failed to send task assigned email', err));
+            }
+        }
 
         res.status(200).json({ success: true, data: task });
     } catch (error) {
