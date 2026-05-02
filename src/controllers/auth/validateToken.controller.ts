@@ -16,7 +16,7 @@ export const validateToken = async (req: Request, res: Response) => {
     if (!secret || typeof secret !== 'string' || secret.trim() === '') {
         return res.status(500).json({
             success: false,
-            error: 'Server configuration error: PRIVATE_KEY missing',
+            error: 'Server configuration error: PUBLIC_KEY missing',
         });
     }
 
@@ -26,7 +26,7 @@ export const validateToken = async (req: Request, res: Response) => {
         }
 
         if (typeof decoded === 'object' && decoded !== null) {
-            res.json({
+            return res.json({
                 success: true,
                 user: {
                     userId: decoded.userId,
@@ -41,5 +41,7 @@ export const validateToken = async (req: Request, res: Response) => {
                 },
             });
         }
+
+        return res.status(401).json({ error: 'Token is invalid' });
     });
 };

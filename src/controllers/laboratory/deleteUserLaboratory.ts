@@ -74,20 +74,15 @@ export const deleteLaboratoryMember = async (req: Request, res: Response) => {
                 laboratoryId: ownerLaboratory.laboratory.id,
                 email: memberToDelete.user.email
             }
-        })
+        });
 
-        if (!invitationToDelete) {
-            return res.status(404).json({
-                success: false,
-                message: 'Member not found in this invitation list'
+        if (invitationToDelete) {
+            await prismaClient.invitation.delete({
+                where: {
+                    id: invitationToDelete.id
+                }
             });
         }
-
-        await prismaClient.invitation.delete({
-            where: {
-                id: invitationToDelete.id
-            }
-        })
 
         return res.status(200).json({
             success: true,
