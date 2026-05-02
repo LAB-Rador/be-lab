@@ -42,6 +42,21 @@ export const getUniqueAnimalById = async (req: Request, res: Response) => {
             },
             include: {
                 animalType: true,
+                experimentAnimals: {
+                    orderBy: { createdAt: 'desc' },
+                    include: {
+                        experiment: {
+                            include: {
+                                createdBy: {
+                                    select: {
+                                        firstName: true,
+                                        lastName: true,
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
                 records: {
                     skip: (pageNumber - 1) * rowsNumber,
                     take: rowsNumber,
