@@ -21,7 +21,7 @@ export default {
     'src/**/*.ts',
     '!src/**/*.d.ts',
   ],
-  moduleNameMapping: {
+  moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1'
   }
 };
