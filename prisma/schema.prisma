@@ -75,6 +75,7 @@ model Laboratory {
   users         UserLaboratory[]
   invitations   Invitation[]     @relation("LaboratoryInvitations")
   tasks         Task[]
+  notifications Notification[]
 
   @@index([name])
 }
@@ -372,16 +373,19 @@ model Task {
 }
 
 model Notification {
-  id        String           @id @default(uuid())
-  userId    String
-  title     String
-  message   String
-  isRead    Boolean          @default(false)
-  type      NotificationType
-  createdAt DateTime         @default(now())
-  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id             String           @id @default(uuid())
+  userId         String
+  laboratoryId   String
+  title          String
+  message        String
+  isRead         Boolean          @default(false)
+  type           NotificationType
+  createdAt      DateTime         @default(now())
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  laboratory     Laboratory       @relation(fields: [laboratoryId], references: [id], onDelete: Cascade)
 
-  @@index([userId, createdAt])
+  @@index([userId, laboratoryId, createdAt])
+  @@index([laboratoryId])
 }
 
 enum BillingCycle {

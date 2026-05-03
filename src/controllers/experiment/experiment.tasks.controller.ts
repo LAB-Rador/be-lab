@@ -198,6 +198,7 @@ export const createExperimentTask = async (req: Request, res: Response) => {
             actorUserId: userId,
             assigneeUserId: assignedToId,
             taskTitle: task.title,
+            laboratoryId: experiment.laboratoryId,
             contextLabel: `Experiment "${experiment.title}"`,
         }).catch((err) => console.error('Failed to create task in-app notification', err));
 
@@ -327,6 +328,7 @@ export const updateExperimentTask = async (req: Request, res: Response) => {
                 actorUserId: userId,
                 assigneeUserId: data.assignedToId!,
                 taskTitle: task.title,
+                laboratoryId: experiment.laboratoryId,
                 contextLabel: `Experiment "${experiment.title}"`,
             }).catch((err) => console.error('Failed to create task in-app notification', err));
         }

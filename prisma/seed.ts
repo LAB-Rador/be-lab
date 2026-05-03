@@ -534,6 +534,7 @@ async function main() {
     await prisma.notification.create({
       data: {
         userId: user2.id,
+        laboratoryId: laboratory2.id,
         title: 'Напоминание о взвешивании',
         message: 'Не забудьте взвесить животных в группе A эксперимента "Исследование влияния препарата X на память"',
         type: 'TASK',
@@ -543,6 +544,7 @@ async function main() {
     await prisma.notification.create({
       data: {
         userId: user3.id,
+        laboratoryId: laboratory2.id,
         title: 'Новое животное добавлено',
         message: 'В лабораторию поступил новый кролик K001',
         type: 'ANIMAL_ALERT',
@@ -552,6 +554,7 @@ async function main() {
     await prisma.notification.create({
       data: {
         userId: user4.id,
+        laboratoryId: laboratory2.id,
         title: 'Эксперимент завершен',
         message: 'Эксперимент "Исследование влияния препарата X на память" готов к анализу результатов',
         type: 'EXPERIMENT',

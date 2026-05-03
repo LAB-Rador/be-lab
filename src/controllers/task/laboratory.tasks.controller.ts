@@ -1,6 +1,7 @@
 import { createTaskAssignedInAppNotification } from '../../services/notification/task-assigned-in-app.service.js';
 import { sendTaskAssignedEmail } from '../../services/email/task-assigned-notification.service.js';
 import { formatUserDisplayName } from '../../lib/format-user-display-name.js';
+import { loadLaboratoryIdForActiveUser } from '../../lib/load-laboratory-for-active-user.js';
 import { AccessStatus, TaskPriority, TaskStatus } from '@prisma/client';
 import { prismaClient } from '../../lib/prisma.js';
 import { Request, Response } from 'express';
@@ -11,25 +12,6 @@ const assignedToSelect = {
     firstName: true,
     lastName: true,
 };
-
-async function loadLaboratoryIdForActiveUser(
-    userId: string,
-    labName: string,
-): Promise<{ laboratoryId: string; laboratoryName: string } | null> {
-    const row = await prismaClient.userLaboratory.findFirst({
-        where: {
-            userId,
-            accessStatus: AccessStatus.ACTIVE,
-            laboratory: { name: labName },
-        },
-        select: {
-            laboratoryId: true,
-            laboratory: { select: { name: true } },
-        },
-    });
-    if (!row) return null;
-    return { laboratoryId: row.laboratoryId, laboratoryName: row.laboratory.name };
-}
 
 async function assigneeIsActiveLabMember(laboratoryId: string, assignedToId: string): Promise<boolean> {
     const m = await prismaClient.userLaboratory.findFirst({
@@ -211,6 +193,7 @@ export const createLaboratoryTask = async (req: Request, res: Response) => {
             actorUserId: userId,
             assigneeUserId: assignedToId,
             taskTitle: task.title,
+            laboratoryId: lab.laboratoryId,
             contextLabel: `Laboratory "${lab.laboratoryName}"`,
         }).catch((err) => console.error('Failed to create task in-app notification', err));
 
@@ -340,6 +323,7 @@ export const updateLaboratoryTask = async (req: Request, res: Response) => {
                 actorUserId: userId,
                 assigneeUserId: data.assignedToId!,
                 taskTitle: task.title,
+                laboratoryId: lab.laboratoryId,
                 contextLabel: `Laboratory "${lab.laboratoryName}"`,
             }).catch((err) => console.error('Failed to create task in-app notification', err));
         }
