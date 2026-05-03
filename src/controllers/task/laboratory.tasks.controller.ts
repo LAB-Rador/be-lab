@@ -5,54 +5,6 @@ import { AccessStatus, TaskPriority, TaskStatus } from '@prisma/client';
 import { prismaClient } from '../../lib/prisma.js';
 import { Request, Response } from 'express';
 
-type ExperimentGate = {
-    id: string;
-    laboratoryId: string;
-    createdById: string;
-    title: string;
-    laboratory: { name: string };
-    members: { userId: string }[];
-};
-
-async function loadExperimentWithAccessGate(
-    userId: string,
-    labId: string,
-    experimentId: string,
-): Promise<ExperimentGate | null> {
-    const experiment = await prismaClient.experiment.findFirst({
-        where: {
-            id: experimentId,
-            laboratory: {
-                name: labId,
-                users: {
-                    some: {
-                        userId,
-                        accessStatus: AccessStatus.ACTIVE,
-                    },
-                },
-            },
-            OR: [{ createdById: userId }, { members: { some: { userId } } }],
-        },
-        select: {
-            id: true,
-            laboratoryId: true,
-            createdById: true,
-            title: true,
-            laboratory: { select: { name: true } },
-            members: { select: { userId: true } },
-        },
-    });
-
-    return experiment ?? null;
-}
-
-function assigneeAllowed(experiment: ExperimentGate, assignedToId: string): boolean {
-    if (experiment.createdById === assignedToId) {
-        return true;
-    }
-    return experiment.members.some((m) => m.userId === assignedToId);
-}
-
 const assignedToSelect = {
     id: true,
     email: true,
@@ -60,27 +12,88 @@ const assignedToSelect = {
     lastName: true,
 };
 
-export const getPaginatedExperimentTasks = async (req: Request, res: Response) => {
+async function loadLaboratoryIdForActiveUser(
+    userId: string,
+    labName: string,
+): Promise<{ laboratoryId: string; laboratoryName: string } | null> {
+    const row = await prismaClient.userLaboratory.findFirst({
+        where: {
+            userId,
+            accessStatus: AccessStatus.ACTIVE,
+            laboratory: { name: labName },
+        },
+        select: {
+            laboratoryId: true,
+            laboratory: { select: { name: true } },
+        },
+    });
+    if (!row) return null;
+    return { laboratoryId: row.laboratoryId, laboratoryName: row.laboratory.name };
+}
+
+async function assigneeIsActiveLabMember(laboratoryId: string, assignedToId: string): Promise<boolean> {
+    const m = await prismaClient.userLaboratory.findFirst({
+        where: {
+            userId: assignedToId,
+            laboratoryId,
+            accessStatus: AccessStatus.ACTIVE,
+        },
+        select: { id: true },
+    });
+    return !!m;
+}
+
+function parseOptionalEnum<T extends string>(value: unknown, allowed: readonly T[]): T | undefined {
+    if (value === undefined || value === null || value === '') return undefined;
+    const s = String(value);
+    return allowed.includes(s as T) ? (s as T) : undefined;
+}
+
+export const getPaginatedLaboratoryTasks = async (req: Request, res: Response) => {
     try {
-        const { userId, labId, experimentId } = req.params;
+        const { userId, labId } = req.params;
         const page = Math.max(1, parseInt(String(req.query.page ?? '1'), 10));
         const pageSize = Math.min(100, Math.max(1, parseInt(String(req.query.pageSize ?? '10'), 10)));
+        const assigneeScope = String(req.query.assigneeScope ?? '');
+        const status = parseOptionalEnum(req.query.status, Object.values(TaskStatus) as TaskStatus[]);
+        const priority = parseOptionalEnum(req.query.priority, Object.values(TaskPriority) as TaskPriority[]);
+        const dueDateFromRaw = req.query.dueDateFrom;
+        const dueDateToRaw = req.query.dueDateTo;
 
-        const experiment = await loadExperimentWithAccessGate(userId, labId, experimentId);
-        if (!experiment) {
-            return res.status(404).json({ success: false, message: 'Experiment not found' });
+        const lab = await loadLaboratoryIdForActiveUser(userId, labId);
+        if (!lab) {
+            return res.status(403).json({ success: false, message: 'Access denied to this laboratory' });
         }
 
-        const where = {
-            experimentId: experiment.id,
-            laboratoryId: experiment.laboratoryId,
+        const where: {
+            laboratoryId: string;
+            experimentId: null;
+            status?: TaskStatus;
+            priority?: TaskPriority;
+            assignedToId?: string;
+            dueDate?: { gte: Date; lte: Date };
+        } = {
+            laboratoryId: lab.laboratoryId,
+            experimentId: null,
         };
+
+        if (status) where.status = status;
+        if (priority) where.priority = priority;
+        if (assigneeScope === 'me') where.assignedToId = userId;
+
+        if (dueDateFromRaw && dueDateToRaw && typeof dueDateFromRaw === 'string' && typeof dueDateToRaw === 'string') {
+            const from = new Date(dueDateFromRaw);
+            const to = new Date(dueDateToRaw);
+            if (!Number.isNaN(from.getTime()) && !Number.isNaN(to.getTime())) {
+                where.dueDate = { gte: from, lte: to };
+            }
+        }
 
         const totalCount = await prismaClient.task.count({ where });
 
         const items = await prismaClient.task.findMany({
             where,
-            orderBy: { createdAt: 'desc' },
+            orderBy: [{ dueDate: 'asc' }, { createdAt: 'desc' }],
             skip: (page - 1) * pageSize,
             take: pageSize,
             include: {
@@ -108,18 +121,18 @@ export const getPaginatedExperimentTasks = async (req: Request, res: Response) =
             },
         });
     } catch (error) {
-        console.error('Error fetching experiment tasks:', error);
+        console.error('Error fetching laboratory tasks:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to fetch experiment tasks',
+            message: 'Failed to fetch laboratory tasks',
             error: error instanceof Error ? error.message : 'Unknown error',
         });
     }
 };
 
-export const createExperimentTask = async (req: Request, res: Response) => {
+export const createLaboratoryTask = async (req: Request, res: Response) => {
     try {
-        const { userId, labId, experimentId } = req.params;
+        const { userId, labId } = req.params;
         const { title, description, assignedToId, dueDate, priority, status } = req.body ?? {};
 
         if (!title || typeof title !== 'string' || title.trim().length === 0) {
@@ -129,15 +142,15 @@ export const createExperimentTask = async (req: Request, res: Response) => {
             return res.status(400).json({ success: false, message: 'assignedToId is required' });
         }
 
-        const experiment = await loadExperimentWithAccessGate(userId, labId, experimentId);
-        if (!experiment) {
-            return res.status(404).json({ success: false, message: 'Experiment not found' });
+        const lab = await loadLaboratoryIdForActiveUser(userId, labId);
+        if (!lab) {
+            return res.status(403).json({ success: false, message: 'Access denied to this laboratory' });
         }
 
-        if (!assigneeAllowed(experiment, assignedToId)) {
+        if (!(await assigneeIsActiveLabMember(lab.laboratoryId, assignedToId))) {
             return res.status(400).json({
                 success: false,
-                message: 'Assignee must be the experiment creator or an experiment member',
+                message: 'Assignee must be an active member of this laboratory',
             });
         }
 
@@ -165,8 +178,8 @@ export const createExperimentTask = async (req: Request, res: Response) => {
                 title: title.trim(),
                 description:
                     typeof description === 'string' && description.trim().length > 0 ? description.trim() : null,
-                laboratoryId: experiment.laboratoryId,
-                experimentId: experiment.id,
+                laboratoryId: lab.laboratoryId,
+                experimentId: null,
                 createdById: userId,
                 assignedToId,
                 priority: parsedPriority,
@@ -188,8 +201,8 @@ export const createExperimentTask = async (req: Request, res: Response) => {
                 to: task.assignedTo.email,
                 taskTitle: task.title,
                 priority: task.priority,
-                experimentTitle: experiment.title,
-                laboratoryName: experiment.laboratory.name,
+                experimentTitle: 'General laboratory task',
+                laboratoryName: lab.laboratoryName,
                 assignerDisplayName: formatUserDisplayName(assigner),
             }).catch((err) => console.error('Failed to send task assigned email', err));
         }
@@ -198,35 +211,35 @@ export const createExperimentTask = async (req: Request, res: Response) => {
             actorUserId: userId,
             assigneeUserId: assignedToId,
             taskTitle: task.title,
-            contextLabel: `Experiment "${experiment.title}"`,
+            contextLabel: `Laboratory "${lab.laboratoryName}"`,
         }).catch((err) => console.error('Failed to create task in-app notification', err));
 
         res.status(201).json({ success: true, data: task });
     } catch (error) {
-        console.error('Error creating experiment task:', error);
+        console.error('Error creating laboratory task:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to create experiment task',
+            message: 'Failed to create laboratory task',
             error: error instanceof Error ? error.message : 'Unknown error',
         });
     }
 };
 
-export const updateExperimentTask = async (req: Request, res: Response) => {
+export const updateLaboratoryTask = async (req: Request, res: Response) => {
     try {
-        const { userId, labId, experimentId, taskId } = req.params;
+        const { userId, labId, taskId } = req.params;
         const { title, description, assignedToId, dueDate, priority, status } = req.body ?? {};
 
-        const experiment = await loadExperimentWithAccessGate(userId, labId, experimentId);
-        if (!experiment) {
-            return res.status(404).json({ success: false, message: 'Experiment not found' });
+        const lab = await loadLaboratoryIdForActiveUser(userId, labId);
+        if (!lab) {
+            return res.status(403).json({ success: false, message: 'Access denied to this laboratory' });
         }
 
         const existing = await prismaClient.task.findFirst({
             where: {
                 id: taskId,
-                experimentId: experiment.id,
-                laboratoryId: experiment.laboratoryId,
+                laboratoryId: lab.laboratoryId,
+                experimentId: null,
             },
             select: { id: true, assignedToId: true },
         });
@@ -239,10 +252,10 @@ export const updateExperimentTask = async (req: Request, res: Response) => {
             if (!assignedToId || typeof assignedToId !== 'string') {
                 return res.status(400).json({ success: false, message: 'assignedToId must be a non-empty string' });
             }
-            if (!assigneeAllowed(experiment, assignedToId)) {
+            if (!(await assigneeIsActiveLabMember(lab.laboratoryId, assignedToId))) {
                 return res.status(400).json({
                     success: false,
-                    message: 'Assignee must be the experiment creator or an experiment member',
+                    message: 'Assignee must be an active member of this laboratory',
                 });
             }
         }
@@ -317,8 +330,8 @@ export const updateExperimentTask = async (req: Request, res: Response) => {
                     to: task.assignedTo.email,
                     taskTitle: task.title,
                     priority: task.priority,
-                    experimentTitle: experiment.title,
-                    laboratoryName: experiment.laboratory.name,
+                    experimentTitle: 'General laboratory task',
+                    laboratoryName: lab.laboratoryName,
                     assignerDisplayName: formatUserDisplayName(assigner),
                 }).catch((err) => console.error('Failed to send task assigned email', err));
             }
@@ -327,25 +340,24 @@ export const updateExperimentTask = async (req: Request, res: Response) => {
                 actorUserId: userId,
                 assigneeUserId: data.assignedToId!,
                 taskTitle: task.title,
-                contextLabel: `Experiment "${experiment.title}"`,
+                contextLabel: `Laboratory "${lab.laboratoryName}"`,
             }).catch((err) => console.error('Failed to create task in-app notification', err));
         }
 
         res.status(200).json({ success: true, data: task });
     } catch (error) {
-        console.error('Error updating experiment task:', error);
+        console.error('Error updating laboratory task:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to update experiment task',
+            message: 'Failed to update laboratory task',
             error: error instanceof Error ? error.message : 'Unknown error',
         });
     }
 };
 
-/** Partial update: status only (fast toggle from the tasks table). */
-export const patchExperimentTaskStatus = async (req: Request, res: Response) => {
+export const patchLaboratoryTaskStatus = async (req: Request, res: Response) => {
     try {
-        const { userId, labId, experimentId, taskId } = req.params;
+        const { userId, labId, taskId } = req.params;
         const { status } = req.body ?? {};
 
         const allowedStatuses = Object.values(TaskStatus) as readonly string[];
@@ -355,16 +367,16 @@ export const patchExperimentTaskStatus = async (req: Request, res: Response) => 
 
         const nextStatus = status as TaskStatus;
 
-        const experiment = await loadExperimentWithAccessGate(userId, labId, experimentId);
-        if (!experiment) {
-            return res.status(404).json({ success: false, message: 'Experiment not found' });
+        const lab = await loadLaboratoryIdForActiveUser(userId, labId);
+        if (!lab) {
+            return res.status(403).json({ success: false, message: 'Access denied to this laboratory' });
         }
 
         const existing = await prismaClient.task.findFirst({
             where: {
                 id: taskId,
-                experimentId: experiment.id,
-                laboratoryId: experiment.laboratoryId,
+                laboratoryId: lab.laboratoryId,
+                experimentId: null,
             },
             select: { id: true },
         });
@@ -384,7 +396,7 @@ export const patchExperimentTaskStatus = async (req: Request, res: Response) => 
 
         res.status(200).json({ success: true, data: task });
     } catch (error) {
-        console.error('Error patching experiment task status:', error);
+        console.error('Error patching laboratory task status:', error);
         res.status(500).json({
             success: false,
             message: 'Failed to update task status',
@@ -393,20 +405,20 @@ export const patchExperimentTaskStatus = async (req: Request, res: Response) => 
     }
 };
 
-export const deleteExperimentTask = async (req: Request, res: Response) => {
+export const deleteLaboratoryTask = async (req: Request, res: Response) => {
     try {
-        const { userId, labId, experimentId, taskId } = req.params;
+        const { userId, labId, taskId } = req.params;
 
-        const experiment = await loadExperimentWithAccessGate(userId, labId, experimentId);
-        if (!experiment) {
-            return res.status(404).json({ success: false, message: 'Experiment not found' });
+        const lab = await loadLaboratoryIdForActiveUser(userId, labId);
+        if (!lab) {
+            return res.status(403).json({ success: false, message: 'Access denied to this laboratory' });
         }
 
         const existing = await prismaClient.task.findFirst({
             where: {
                 id: taskId,
-                experimentId: experiment.id,
-                laboratoryId: experiment.laboratoryId,
+                laboratoryId: lab.laboratoryId,
+                experimentId: null,
             },
             select: { id: true },
         });
@@ -419,10 +431,10 @@ export const deleteExperimentTask = async (req: Request, res: Response) => {
 
         res.status(200).json({ success: true });
     } catch (error) {
-        console.error('Error deleting experiment task:', error);
+        console.error('Error deleting laboratory task:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to delete experiment task',
+            message: 'Failed to delete laboratory task',
             error: error instanceof Error ? error.message : 'Unknown error',
         });
     }

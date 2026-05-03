@@ -6,7 +6,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon --exec \"node --import tsx/esm\" src/index.ts",
-    "test": "jest --detectOpenHandles --colors",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest --detectOpenHandles --colors",
     "lint": "eslint 'src/**/*.{js,ts}' 'tests/**/*.{js,ts}' --fix --cache",
     "build": "rm -rf ./build && tsc",
     "start": "ts-node-dev --respawn --transpileOnly src/index.ts",
