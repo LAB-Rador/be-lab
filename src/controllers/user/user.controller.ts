@@ -3,9 +3,22 @@ import { prismaClient } from '../../lib/prisma.js';
 
 const userClient = prismaClient.user;
 
+const userPublicSelect = {
+    id: true,
+    email: true,
+    address: true,
+    contactPhone: true,
+    firstName: true,
+    lastName: true,
+    institution: true,
+    confirmedEmail: true,
+    createdAt: true,
+    updatedAt: true,
+} as const;
+
 export const getAllUsers = async (req: Request, res: Response) => {
     try {
-        const users = await userClient.findMany();
+        const users = await userClient.findMany({ select: userPublicSelect });
         res.status(200).json({ success: true, data: users });
     } catch (error) {
         console.error('Error fetching users:', error);
@@ -24,6 +37,7 @@ export const getUserById = async (req: Request, res: Response) => {
             where: {
                 id: userId,
             },
+            select: userPublicSelect,
         });
         res.status(200).json({ success: true, data: user });
     } catch (error) {
@@ -36,15 +50,33 @@ export const getUserById = async (req: Request, res: Response) => {
     }
 };
 
+const updatableProfileKeys = [
+    'firstName',
+    'lastName',
+    'address',
+    'contactPhone',
+    'institution',
+] as const;
+
 export const updateUser = async (req: Request, res: Response) => {
     try {
         const userId = req.params.id;
-        const userData = req.body;
+        const body = req.body as Record<string, unknown>;
+        const data: Record<string, string | null> = {};
+        for (const key of updatableProfileKeys) {
+            if (!(key in body)) continue;
+            const v = body[key];
+            if (v === null) {
+                data[key] = null;
+            } else if (typeof v === 'string') {
+                data[key] = v;
+            }
+        }
         const user = await userClient.update({
             where: {
                 id: userId,
             },
-            data: userData,
+            data,
         });
 
         const { password, ...successUser } = user;

@@ -26,7 +26,7 @@ export const validateToken = async (req: Request, res: Response) => {
         }
 
         if (typeof decoded === 'object' && decoded !== null) {
-            res.json({
+            return res.json({
                 success: true,
                 user: {
                     userId: decoded.userId,
@@ -41,5 +41,7 @@ export const validateToken = async (req: Request, res: Response) => {
                 },
             });
         }
+
+        return res.status(401).json({ success: false, error: 'Token payload is invalid' });
     });
 };

@@ -84,9 +84,10 @@ export const resetPassword = async (req: Request, res: Response) => {
             },
         });
 
+        const { password: _pw, ...userWithoutPassword } = updatedUser;
         res.status(200).json({
             success: true,
-            data: updatedUser,
+            data: userWithoutPassword,
             message: 'New password successfully reseted.',
         });
     } catch (error) {
