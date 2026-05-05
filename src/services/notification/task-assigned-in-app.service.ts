@@ -7,10 +7,11 @@ import { prismaClient } from '../../lib/prisma.js';
 export async function createTaskAssignedInAppNotification(params: {
     actorUserId: string;
     assigneeUserId: string;
+    laboratoryId: string;
     taskTitle: string;
     contextLabel: string;
 }): Promise<void> {
-    const { actorUserId, assigneeUserId, taskTitle, contextLabel } = params;
+    const { actorUserId, assigneeUserId, laboratoryId, taskTitle, contextLabel } = params;
     if (assigneeUserId === actorUserId) {
         return;
     }
@@ -18,6 +19,7 @@ export async function createTaskAssignedInAppNotification(params: {
     await prismaClient.notification.create({
         data: {
             userId: assigneeUserId,
+            laboratoryId,
             title: 'New task assigned',
             message: `${contextLabel}: ${safeTitle}`,
             type: NotificationType.TASK,
