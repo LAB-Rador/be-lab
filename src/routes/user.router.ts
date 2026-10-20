@@ -4,11 +4,9 @@ import {
     getAllUsers,
     getUserById,
     updateUser,
+    updateProfile,
     deleteUser,
 } from '../controllers/user/user.controller.js';
-import {
-    createUser,
-} from '../controllers/user/create.controller.js';
 import {
     getUserNotifications,
     patchNotificationRead,
@@ -20,7 +18,7 @@ userRouter.get('/', getAllUsers);
 userRouter.get('/:id/notifications', getUserNotifications);
 userRouter.patch('/:id/notifications/:notificationId/read', patchNotificationRead);
 userRouter.get('/:id', getUserById);
-userRouter.post('/', createUser);
+userRouter.put('/:id/profile', updateProfile);
 userRouter.put('/:id', updateUser);
 userRouter.delete('/:id', deleteUser);
 
