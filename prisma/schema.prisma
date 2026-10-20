@@ -154,14 +154,6 @@ model LoginToken {
   @@index([invitationId])
 }
 
-model VerificationCode {
-  id        String   @id @default(uuid())
-  email     String
-  code      String
-  expiresAt DateTime
-  createdAt DateTime @default(now())
-}
-
 model AnimalType {
   id                String             @id @default(uuid())
   name              String
