@@ -110,18 +110,31 @@ export const consumeMagicLink = async (req: Request, res: Response) => {
             }
 
             let user = await tx.user.findUnique({ where: { email: fresh.email } });
+            const invitedName = fresh.purpose === LoginTokenPurpose.INVITE ? fresh.invitation : null;
             if (!user) {
                 user = await tx.user.create({
                     data: {
                         email: fresh.email,
                         confirmedEmail: true,
+                        firstName: invitedName?.firstName ?? null,
+                        lastName: invitedName?.lastName ?? null,
                     },
                 });
-            } else if (!user.confirmedEmail) {
-                user = await tx.user.update({
-                    where: { id: user.id },
-                    data: { confirmedEmail: true },
-                });
+            } else {
+                const profilePatch: { confirmedEmail?: boolean; firstName?: string; lastName?: string | null } = {};
+                if (!user.confirmedEmail) {
+                    profilePatch.confirmedEmail = true;
+                }
+                if (!user.firstName && invitedName?.firstName) {
+                    profilePatch.firstName = invitedName.firstName;
+                    profilePatch.lastName = invitedName.lastName;
+                }
+                if (Object.keys(profilePatch).length > 0) {
+                    user = await tx.user.update({
+                        where: { id: user.id },
+                        data: profilePatch,
+                    });
+                }
             }
 
             let joinedLaboratory: Laboratory | null = null;

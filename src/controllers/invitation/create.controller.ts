@@ -11,6 +11,7 @@ import { frontendOrigin } from '../../lib/frontend-origin.js';
 import { normalizeEmail } from '../../lib/normalize-email.js';
 import { prismaClient } from '../../lib/prisma.js';
 import { createRawToken, hashToken } from '../../lib/token-hash.js';
+import { splitFullName } from '../../lib/split-full-name.js';
 
 const TEN_DAYS_MS = 10 * 24 * 60 * 60 * 1000;
 
@@ -24,11 +25,12 @@ export const createInvitation = async (req: Request, res: Response) => {
         const invitedBy = typeof req.body?.invitedBy === 'string' ? req.body.invitedBy : '';
         const labName = typeof req.body?.labId === 'string' ? req.body.labId.trim() : '';
         const role = req.body?.role;
+        const name = splitFullName(req.body?.fullName);
 
-        if (!email || !invitedBy || !labName || !isRole(role)) {
+        if (!email || !invitedBy || !labName || !isRole(role) || !name) {
             return res.status(400).json({
                 success: false,
-                message: 'Email, role, laboratory, and inviter are required.',
+                message: 'Email, full name, role, laboratory, and inviter are required.',
             });
         }
 
@@ -107,6 +109,8 @@ export const createInvitation = async (req: Request, res: Response) => {
                     expiresAt,
                     token: tokenHash,
                     code: tokenHash,
+                    firstName: name.firstName,
+                    lastName: name.lastName,
                 },
             });
         } else {
@@ -119,6 +123,8 @@ export const createInvitation = async (req: Request, res: Response) => {
                     role,
                     token: tokenHash,
                     expiresAt,
+                    firstName: name.firstName,
+                    lastName: name.lastName,
                 },
             });
             invitationId = created.id;

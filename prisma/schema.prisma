@@ -130,6 +130,8 @@ model Invitation {
   token        String            @unique
   expiresAt    DateTime
   status       InvitationStatus  @default(PENDING)
+  firstName    String?
+  lastName     String?
   createdAt    DateTime          @default(now())
   usedAt       DateTime?
   laboratory   Laboratory        @relation("LaboratoryInvitations", fields: [laboratoryId], references: [id], onDelete: Cascade)
