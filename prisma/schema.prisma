@@ -88,7 +88,7 @@ model User {
   firstName       String?
   lastName        String?
   institution     String?
-  password        String
+  password        String?
   confirmedEmail  Boolean          @default(false)
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
@@ -134,8 +134,24 @@ model Invitation {
   usedAt       DateTime?
   laboratory   Laboratory        @relation("LaboratoryInvitations", fields: [laboratoryId], references: [id], onDelete: Cascade)
   inviter      User              @relation("UserInvitations", fields: [invitedBy], references: [id])
+  loginTokens  LoginToken[]
 
-  @@unique([email, laboratoryId])
+  @@unique([email, laboratoryId, status])
+}
+
+model LoginToken {
+  id           String            @id @default(uuid())
+  email        String
+  tokenHash    String            @unique
+  purpose      LoginTokenPurpose
+  invitationId String?
+  expiresAt    DateTime
+  usedAt       DateTime?
+  createdAt    DateTime          @default(now())
+  invitation   Invitation?       @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+
+  @@index([email])
+  @@index([invitationId])
 }
 
 model VerificationCode {
@@ -512,4 +528,9 @@ enum InvitationStatus {
   ACCEPTED
   EXPIRED
   REVOKED
+}
+
+enum LoginTokenPurpose {
+  SIGN_IN
+  INVITE
 }
