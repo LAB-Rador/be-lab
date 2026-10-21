@@ -2,6 +2,7 @@ import userLaboratoryRouter from './routes/userLaboratory.router.js';
 import animalRecordRouter from './routes/animalRecord.router.js';
 import laboratoryRouter from './routes/laboratory.router.js';
 import experimentRouter from './routes/experiment.router.js';
+import breedingRouter from './routes/breeding.router.js';
 import invitationRouter from './routes/invitation.router.js';
 import animalRouter from './routes/animal.router.js';
 import publicRouter from './routes/public.router.js';
@@ -52,6 +53,7 @@ app.get('/health', (req, res) => {
 app.use('/api/laboratories', userLaboratoryRouter);
 app.use('/api/animal-records', animalRecordRouter);
 app.use('/api/experiments', experimentRouter);
+app.use('/api/breedings', breedingRouter);
 app.use('/api/laboratory', laboratoryRouter);
 app.use('/api/invitation', invitationRouter);
 app.use('/api/animals', animalRouter);
