@@ -58,11 +58,18 @@ export const getUniqueAnimalById = async (req: Request, res: Response) => {
                     },
                 },
                 records: {
+                    orderBy: { date: 'desc' },
                     skip: (pageNumber - 1) * rowsNumber,
                     take: rowsNumber,
                     include: {
-                        measurements: true
-                    }
+                        measurements: true,
+                        createdBy: {
+                            select: {
+                                firstName: true,
+                                lastName: true,
+                            },
+                        },
+                    },
                 }
             },
         });
