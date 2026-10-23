@@ -1,3 +1,4 @@
+import subscriptionRouter from './routes/subscription.router.js';
 import userLaboratoryRouter from './routes/userLaboratory.router.js';
 import animalRecordRouter from './routes/animalRecord.router.js';
 import laboratoryRouter from './routes/laboratory.router.js';
@@ -50,6 +51,7 @@ app.get('/health', (req, res) => {
     res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
+app.use('/api/subscriptions', subscriptionRouter);
 app.use('/api/laboratories', userLaboratoryRouter);
 app.use('/api/animal-records', animalRecordRouter);
 app.use('/api/experiments', experimentRouter);
