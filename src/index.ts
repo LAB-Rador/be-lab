@@ -1,4 +1,5 @@
 import subscriptionRouter from './routes/subscription.router.js';
+import reportRouter from './routes/report.router.js';
 import userLaboratoryRouter from './routes/userLaboratory.router.js';
 import animalRecordRouter from './routes/animalRecord.router.js';
 import laboratoryRouter from './routes/laboratory.router.js';
@@ -52,6 +53,7 @@ app.get('/health', (req, res) => {
 });
 
 app.use('/api/subscriptions', subscriptionRouter);
+app.use('/api/reports', reportRouter);
 app.use('/api/laboratories', userLaboratoryRouter);
 app.use('/api/animal-records', animalRecordRouter);
 app.use('/api/experiments', experimentRouter);
