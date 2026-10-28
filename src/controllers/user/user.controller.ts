@@ -3,20 +3,6 @@ import { prismaClient } from '../../lib/prisma.js';
 
 const userClient = prismaClient.user;
 
-export const getAllUsers = async (req: Request, res: Response) => {
-    try {
-        const users = await userClient.findMany();
-        res.status(200).json({ success: true, data: users });
-    } catch (error) {
-        console.error('Error fetching users:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Failed to fetch users',
-            error: error instanceof Error ? error.message : 'Unknown error',
-        });
-    }
-};
-
 const publicUserSelect = {
     id: true,
     email: true,
@@ -29,6 +15,20 @@ const publicUserSelect = {
     createdAt: true,
     updatedAt: true,
 } as const;
+
+export const getAllUsers = async (req: Request, res: Response) => {
+    try {
+        const users = await userClient.findMany({ select: publicUserSelect });
+        res.status(200).json({ success: true, data: users });
+    } catch (error) {
+        console.error('Error fetching users:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch users',
+            error: error instanceof Error ? error.message : 'Unknown error',
+        });
+    }
+};
 
 function optionalText(value: unknown): string | null {
     if (typeof value !== 'string') return null;
@@ -94,15 +94,30 @@ export const updateProfile = async (req: Request, res: Response) => {
     }
 };
 
+const profileFields = ['firstName', 'lastName', 'address', 'contactPhone', 'institution'] as const;
+
 export const updateUser = async (req: Request, res: Response) => {
     try {
         const userId = req.params.id;
-        const userData = req.body;
+        const body = (req.body ?? {}) as Record<string, unknown>;
+        const data: Record<string, string | null> = {};
+        for (const key of profileFields) {
+            if (!(key in body)) continue;
+            const value = body[key];
+            if (value === null) data[key] = null;
+            else if (typeof value === 'string') data[key] = value.trim() || null;
+        }
+        if (Object.keys(data).length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'No profile fields to update',
+            });
+        }
         const user = await userClient.update({
             where: {
                 id: userId,
             },
-            data: userData,
+            data,
         });
 
         const { password, ...successUser } = user;
