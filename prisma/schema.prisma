@@ -76,6 +76,7 @@ model Laboratory {
   invitations   Invitation[]     @relation("LaboratoryInvitations")
   tasks         Task[]
   notifications Notification[]
+  reportDefinitions ReportDefinition[]
 
   @@index([name])
 }
@@ -100,6 +101,7 @@ model User {
   laboratories    UserLaboratory[]
   invitations     Invitation[]     @relation("UserInvitations")
   experimentMembers ExperimentMember[]
+  reportDefinitions ReportDefinition[]
 }
 
 model UserLaboratory {
@@ -515,6 +517,29 @@ enum NotificationType {
   EXPERIMENT
   ANIMAL_ALERT
   BREEDING
+}
+
+enum ReportSource {
+  ANIMAL
+  EXPERIMENT
+  TASK
+}
+
+model ReportDefinition {
+  id           String       @id @default(uuid())
+  laboratoryId String
+  createdById  String
+  name         String
+  source       ReportSource
+  columns      Json
+  statusFilter String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  laboratory   Laboratory   @relation(fields: [laboratoryId], references: [id], onDelete: Cascade)
+  createdBy    User         @relation(fields: [createdById], references: [id])
+
+  @@unique([laboratoryId, name])
+  @@index([laboratoryId])
 }
 
 enum InvitationStatus {
