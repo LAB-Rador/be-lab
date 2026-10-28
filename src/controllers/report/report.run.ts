@@ -102,7 +102,7 @@ export function parseReportRequest(body: unknown): {
     statusFilter: string | null;
 } | null {
     const run = parseRunRequest(body);
-    if (!run || !body || typeof body !== 'object') return null;
+    if (!run) return null;
     const name = typeof (body as { name?: unknown }).name === 'string'
         ? (body as { name: string }).name.trim()
         : '';

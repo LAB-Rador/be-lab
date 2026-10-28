@@ -22,7 +22,6 @@ function toSavedReport(report: {
     source: 'ANIMAL' | 'EXPERIMENT' | 'TASK';
     columns: Prisma.JsonValue;
     statusFilter: string | null;
-    updatedAt: Date;
     createdBy: { firstName: string | null; lastName: string | null };
 }) {
     return {
@@ -31,7 +30,6 @@ function toSavedReport(report: {
         source: report.source,
         columns: columnsFromJson(report.columns),
         statusFilter: report.statusFilter,
-        updatedAt: report.updatedAt,
         createdByName: personName(report.createdBy.firstName, report.createdBy.lastName),
     };
 }
@@ -42,7 +40,6 @@ const reportSelect = {
     source: true,
     columns: true,
     statusFilter: true,
-    updatedAt: true,
     createdBy: { select: { firstName: true, lastName: true } },
 } as const;
 
