@@ -1,4 +1,5 @@
 import { getAnimalTypes, getAnimalTypeById } from '../controllers/animal/animal-types.controller.js';
+import { deleteAnimalType, updateAnimalType } from '../controllers/animal/update.animal-type.controller.js';
 import { createAnimalType } from '../controllers/animal/create-animal-type.controller.js';
 import { getAnimalGenealogy } from '../controllers/breeding/genealogy.controller.js';
 import { getUniqueAnimalById } from '../controllers/animal/get.unique.animal.byId.js';
@@ -21,6 +22,8 @@ animalRouter.post('/', addAnimal);
 animalRouter.put('/', editAnimal);
 
 // Animal types routes
+animalRouter.put('/types/:userId/:labId/:animalTypeId', updateAnimalType);
+animalRouter.delete('/types/:userId/:labId/:animalTypeId', deleteAnimalType);
 animalRouter.post('/types/:userId/:labId', createAnimalType);
 animalRouter.get('/type/:animalTypeId', getAnimalTypeById);
 animalRouter.get('/types/:userId/:labId', getAnimalTypes);
