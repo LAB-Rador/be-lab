@@ -59,6 +59,33 @@ export const createInvitation = async (req: Request, res: Response) => {
             });
         }
 
+        const subscription = await prismaClient.subscription.findFirst({
+            where: { laboratoryId: membership.laboratoryId },
+            orderBy: { createdAt: 'desc' },
+            select: { maxUsers: true },
+        });
+        if (subscription) {
+            const activeMembers = await prismaClient.userLaboratory.count({
+                where: {
+                    laboratoryId: membership.laboratoryId,
+                    accessStatus: AccessStatus.ACTIVE,
+                },
+            });
+            const otherPending = await prismaClient.invitation.count({
+                where: {
+                    laboratoryId: membership.laboratoryId,
+                    status: InvitationStatus.PENDING,
+                    email: { not: email },
+                },
+            });
+            if (activeMembers + otherPending >= subscription.maxUsers) {
+                return res.status(409).json({
+                    success: false,
+                    message: `This plan allows ${subscription.maxUsers} users.`,
+                });
+            }
+        }
+
         const existingUser = await prismaClient.user.findUnique({
             where: { email },
         });
