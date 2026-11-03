@@ -43,16 +43,34 @@ export const createBreeding = async (req: Request, res: Response) => {
         const animalIds = [...new Set([motherId, fatherId, ...offspringIds])];
         const animals = await prismaClient.animal.findMany({
             where: { id: { in: animalIds }, laboratoryId },
-            select: { id: true },
+            select: { id: true, animalTypeId: true },
         });
         if (animals.length !== animalIds.length) {
             return res.status(400).json({ success: false, message: 'Every animal must belong to this laboratory' });
+        }
+
+        const requestedProtocolId = typeof req.body.protocolId === 'string' ? req.body.protocolId.trim() : '';
+        let protocolId: string | null = null;
+        if (requestedProtocolId) {
+            const protocol = await prismaClient.breedingProtocol.findFirst({
+                where: { id: requestedProtocolId, animalType: { laboratoryId } },
+                select: { id: true, animalTypeId: true },
+            });
+            if (!protocol) {
+                return res.status(400).json({ success: false, message: 'Unknown breeding protocol' });
+            }
+            const mother = animals.find((animal) => animal.id === motherId);
+            if (protocol.animalTypeId !== mother?.animalTypeId) {
+                return res.status(400).json({ success: false, message: 'This protocol is for a different animal type.' });
+            }
+            protocolId = protocol.id;
         }
 
         const breeding = await prismaClient.breeding.create({
             data: {
                 motherId,
                 fatherId,
+                protocolId,
                 startDate,
                 status: status as BreedingStatus,
                 notes: notes || null,
