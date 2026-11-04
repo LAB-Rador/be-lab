@@ -20,7 +20,6 @@
     "noImplicitAny": true,
     "strictNullChecks": true,
     "strictFunctionTypes": true,
-    "baseUrl": "./",
     "resolveJsonModule": true,
     "typeRoots": ["./node_modules/@types"],
     "types": ["node", "jest"],
