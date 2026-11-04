@@ -1,9 +1,34 @@
 import type { Request, Response } from 'express';
-import { BillingCycle, Role, SubscriptionStatus } from '@prisma/client';
+import { AccessStatus, Role, SubscriptionStatus } from '@prisma/client';
+import { ensureFreePlan } from '../../lib/free-plan.js';
 import { prismaClient } from '../../lib/prisma.js';
 
 export const createLaboratory = async (req: Request, res: Response) => {
     const { userId, name, ...labData } = req.body;
+
+    let freePlan: { id: string; maxUsers: number };
+    try {
+        freePlan = await ensureFreePlan();
+        const ownedLaboratories = await prismaClient.userLaboratory.count({
+            where: {
+                userId,
+                role: Role.OWNER,
+                accessStatus: AccessStatus.ACTIVE,
+            },
+        });
+        if (ownedLaboratories >= 1) {
+            return res.status(409).json({
+                success: false,
+                message: 'The Free plan includes one laboratory.',
+            });
+        }
+    } catch (error) {
+        console.error('Error checking laboratory limit:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Failed to create laboratory',
+        });
+    }
 
     try {
         const existingLab = await prismaClient.laboratory.findFirst({
@@ -32,25 +57,6 @@ export const createLaboratory = async (req: Request, res: Response) => {
     }
 
     try {
-        let freePlan = await prismaClient.plan.findFirst({
-            where: { name: 'Free', isActive: true },
-            orderBy: { createdAt: 'asc' },
-            select: { id: true, maxUsers: true },
-        });
-        if (!freePlan) {
-            freePlan = await prismaClient.plan.create({
-                data: {
-                    name: 'Free',
-                    price: 0,
-                    currency: 'CAD',
-                    billingCycle: BillingCycle.MONTHLY,
-                    maxUsers: 3,
-                    isActive: true,
-                },
-                select: { id: true, maxUsers: true },
-            });
-        }
-
         const startDate = new Date();
         const endDate = new Date(startDate);
         endDate.setFullYear(endDate.getFullYear() + 1);

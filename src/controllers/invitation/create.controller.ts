@@ -7,7 +7,9 @@ import {
 } from '@prisma/client';
 import type { Request, Response } from 'express';
 import sendInvitationLink from '../../services/email/invitation.service.js';
+import { ensureFreePlan } from '../../lib/free-plan.js';
 import { frontendOrigin } from '../../lib/frontend-origin.js';
+import { inviteExceedsPlan, planUserLimitMessage } from '../../lib/laboratory-seat-limit.js';
 import { normalizeEmail } from '../../lib/normalize-email.js';
 import { prismaClient } from '../../lib/prisma.js';
 import { createRawToken, hashToken } from '../../lib/token-hash.js';
@@ -59,31 +61,13 @@ export const createInvitation = async (req: Request, res: Response) => {
             });
         }
 
-        const subscription = await prismaClient.subscription.findFirst({
-            where: { laboratoryId: membership.laboratoryId },
-            orderBy: { createdAt: 'desc' },
-            select: { maxUsers: true },
-        });
-        if (subscription) {
-            const activeMembers = await prismaClient.userLaboratory.count({
-                where: {
-                    laboratoryId: membership.laboratoryId,
-                    accessStatus: AccessStatus.ACTIVE,
-                },
+        await ensureFreePlan();
+        const seatLimit = await inviteExceedsPlan(membership.laboratoryId, email);
+        if (seatLimit) {
+            return res.status(409).json({
+                success: false,
+                message: planUserLimitMessage(seatLimit.maxUsers),
             });
-            const otherPending = await prismaClient.invitation.count({
-                where: {
-                    laboratoryId: membership.laboratoryId,
-                    status: InvitationStatus.PENDING,
-                    email: { not: email },
-                },
-            });
-            if (activeMembers + otherPending >= subscription.maxUsers) {
-                return res.status(409).json({
-                    success: false,
-                    message: `This plan allows ${subscription.maxUsers} users.`,
-                });
-            }
         }
 
         const existingUser = await prismaClient.user.findUnique({
