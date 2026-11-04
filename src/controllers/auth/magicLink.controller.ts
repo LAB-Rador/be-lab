@@ -1,6 +1,8 @@
 import { AccessStatus, InvitationStatus, LoginTokenPurpose, type Laboratory } from '@prisma/client';
 import type { Request, Response } from 'express';
+import { ensureFreePlan } from '../../lib/free-plan.js';
 import { frontendOrigin } from '../../lib/frontend-origin.js';
+import { inviteExceedsPlan, planUserLimitMessage } from '../../lib/laboratory-seat-limit.js';
 import { issueAuthSession } from '../../lib/issue-auth-session.js';
 import { normalizeEmail } from '../../lib/normalize-email.js';
 import { prismaClient } from '../../lib/prisma.js';
@@ -75,6 +77,36 @@ export const consumeMagicLink = async (req: Request, res: Response) => {
         }
 
         const tokenHash = hashToken(rawToken);
+        const preview = await prismaClient.loginToken.findUnique({
+            where: { tokenHash },
+            select: {
+                purpose: true,
+                usedAt: true,
+                expiresAt: true,
+                invitation: {
+                    select: { laboratoryId: true, status: true, expiresAt: true, email: true },
+                },
+            },
+        });
+        const invitation = preview?.invitation;
+        const inviteIsOpen = preview
+            && !preview.usedAt
+            && preview.expiresAt > new Date()
+            && preview.purpose === LoginTokenPurpose.INVITE
+            && invitation
+            && invitation.status === InvitationStatus.PENDING
+            && invitation.expiresAt > new Date();
+        if (inviteIsOpen && invitation) {
+            await ensureFreePlan();
+            const seatLimit = await inviteExceedsPlan(invitation.laboratoryId, invitation.email);
+            if (seatLimit) {
+                return res.status(409).json({
+                    success: false,
+                    message: planUserLimitMessage(seatLimit.maxUsers),
+                });
+            }
+        }
+
         const result = await prismaClient.$transaction(async (tx) => {
             const fresh = await tx.loginToken.findUnique({
                 where: { tokenHash },

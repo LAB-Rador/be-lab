@@ -1,4 +1,5 @@
 import { loadLaboratoryIdForActiveUser } from '../../lib/load-laboratory-for-active-user.js';
+import { ensureFreePlan } from '../../lib/free-plan.js';
 import { AccessStatus } from '@prisma/client';
 import { prismaClient } from '../../lib/prisma.js';
 import { Request, Response } from 'express';
@@ -6,6 +7,7 @@ import { Request, Response } from 'express';
 export const getLaboratorySubscription = async (req: Request, res: Response) => {
     try {
         const { userId, labId } = req.params;
+        await ensureFreePlan();
         const lab = await loadLaboratoryIdForActiveUser(userId, labId);
         if (!lab) {
             return res.status(403).json({ success: false, message: 'Access denied to this laboratory' });
