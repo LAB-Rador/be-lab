@@ -41,6 +41,12 @@ export const getUniqueAnimalById = async (req: Request, res: Response) => {
                 ...whereCondition
             },
             include: {
+                cage: {
+                    select: {
+                        id: true,
+                        name: true,
+                    },
+                },
                 animalType: true,
                 experimentAnimals: {
                     orderBy: { createdAt: 'desc' },

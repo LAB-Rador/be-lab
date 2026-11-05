@@ -69,6 +69,7 @@ model Laboratory {
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
   animals       Animal[]
+  cages         Cage[]
   animalTypes   AnimalType[]
   experiments   Experiment[]
   subscriptions Subscription[]
@@ -202,12 +203,14 @@ model Animal {
   genotype          String?
   status            AnimalStatus       @default(ACTIVE)
   location          String?
+  cageId            String?
   origin            String?
   archivedAt        DateTime?
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
   animalType        AnimalType         @relation(fields: [animalTypeId], references: [id])
   laboratory        Laboratory         @relation(fields: [laboratoryId], references: [id])
+  cage              Cage?              @relation(fields: [cageId], references: [id], onDelete: SetNull)
   photos            AnimalPhoto[]
   records           AnimalRecord[]
   fatherBreedings   Breeding[]         @relation("Father")
@@ -217,6 +220,21 @@ model Animal {
   parents           Breeding[]         @relation("Offspring")
 
   @@unique([identifier, laboratoryId])
+  @@index([cageId])
+}
+
+model Cage {
+  id           String     @id @default(uuid())
+  name         String
+  notes        String?
+  laboratoryId String
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  laboratory   Laboratory @relation(fields: [laboratoryId], references: [id], onDelete: Cascade)
+  animals      Animal[]
+
+  @@unique([name, laboratoryId])
+  @@index([laboratoryId])
 }
 
 model CustomFieldValue {
