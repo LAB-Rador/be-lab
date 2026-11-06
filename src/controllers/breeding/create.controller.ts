@@ -96,6 +96,7 @@ export const createBreeding = async (req: Request, res: Response) => {
                 mother: toPedigreeAnimal(breeding.mother),
                 father: toPedigreeAnimal(breeding.father),
                 offspring: breeding.offspring.map(toPedigreeAnimal),
+                litters: [],
             },
         });
     } catch (error) {
