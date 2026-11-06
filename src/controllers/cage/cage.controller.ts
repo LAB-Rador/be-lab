@@ -183,6 +183,39 @@ export const assignAnimalToCage = async (req: Request, res: Response) => {
     }
 };
 
+export const getCage = async (req: Request, res: Response) => {
+    try {
+        const { userId, labId, cageId } = req.params;
+        const laboratory = await laboratoryOrDeny(userId, labId, res);
+        if (!laboratory) return;
+
+        const cage = await prismaClient.cage.findFirst({
+            where: {
+                id: cageId,
+                laboratoryId: laboratory.laboratoryId,
+            },
+            select: cageSelect,
+        });
+        if (!cage) {
+            return res.status(404).json({
+                success: false,
+                message: 'Cage not found',
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            data: cage,
+        });
+    } catch (error) {
+        console.error('Error fetching cage:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to load cage',
+        });
+    }
+};
+
 export const removeAnimalFromCage = async (req: Request, res: Response) => {
     try {
         const { userId, labId, cageId, animalId } = req.params;
