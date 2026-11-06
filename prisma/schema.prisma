@@ -318,6 +318,20 @@ model Breeding {
   mother     Animal            @relation("Mother", fields: [motherId], references: [id])
   protocol   BreedingProtocol? @relation(fields: [protocolId], references: [id])
   offspring  Animal[]          @relation("Offspring")
+  litters    Litter[]
+}
+
+model Litter {
+  id         String   @id @default(uuid())
+  breedingId String
+  bornDate   DateTime
+  count      Int
+  notes      String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  breeding   Breeding @relation(fields: [breedingId], references: [id], onDelete: Cascade)
+
+  @@index([breedingId])
 }
 
 model BreedingProtocol {

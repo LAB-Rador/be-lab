@@ -25,6 +25,10 @@ export const listBreedings = async (req: Request, res: Response) => {
                 mother: { select: pedigreeAnimalSelect },
                 father: { select: pedigreeAnimalSelect },
                 offspring: { select: pedigreeAnimalSelect },
+                litters: {
+                    orderBy: { bornDate: 'desc' },
+                    select: { id: true, bornDate: true, count: true, notes: true },
+                },
             },
         });
 
@@ -38,6 +42,7 @@ export const listBreedings = async (req: Request, res: Response) => {
             mother: toPedigreeAnimal(breeding.mother),
             father: toPedigreeAnimal(breeding.father),
             offspring: breeding.offspring.map(toPedigreeAnimal),
+            litters: breeding.litters,
         }));
 
         return res.status(200).json({ success: true, data });
