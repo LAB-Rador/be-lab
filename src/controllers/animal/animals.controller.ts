@@ -153,6 +153,12 @@ export const getAllAnimals = async (req: Request, res: Response) => {
                         name: true
                     }
                 },
+                cage: {
+                    select: {
+                        id: true,
+                        name: true,
+                    },
+                },
                 photos: true,
                 customFields: {
                     include: {

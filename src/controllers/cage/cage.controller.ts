@@ -12,6 +12,9 @@ const cageSelect = {
             id: true,
             identifier: true,
             name: true,
+            sex: true,
+            strain: true,
+            animalType: { select: { name: true } },
         },
     },
 };
@@ -37,25 +40,24 @@ export const listCages = async (req: Request, res: Response) => {
         const cages = await prismaClient.cage.findMany({
             where: { laboratoryId: laboratory.laboratoryId },
             orderBy: { name: 'asc' },
-            select: cageSelect,
-        });
-        const animals = await prismaClient.animal.findMany({
-            where: {
-                laboratoryId: laboratory.laboratoryId,
-                archivedAt: null,
-            },
-            orderBy: { identifier: 'asc' },
             select: {
                 id: true,
-                identifier: true,
                 name: true,
-                cageId: true,
+                notes: true,
+                _count: { select: { animals: true } },
             },
         });
 
         res.status(200).json({
             success: true,
-            data: { cages, animals },
+            data: {
+                cages: cages.map((cage) => ({
+                    id: cage.id,
+                    name: cage.name,
+                    notes: cage.notes,
+                    animalCount: cage._count.animals,
+                })),
+            },
         });
     } catch (error) {
         console.error('Error fetching cages:', error);
