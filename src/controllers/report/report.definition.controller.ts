@@ -1,3 +1,4 @@
+import { laboratoryAllowsPaidFeatures, PAID_FEATURE_MESSAGE } from '../../lib/paid-access.js';
 import { loadLaboratoryIdForActiveUser } from '../../lib/load-laboratory-for-active-user.js';
 import { prismaClient } from '../../lib/prisma.js';
 import { Prisma } from '@prisma/client';
@@ -81,6 +82,12 @@ export const previewReport = async (req: Request, res: Response) => {
         const parsed = parseRunRequest(req.body);
         if (!parsed) {
             return res.status(400).json({ success: false, message: 'Choose a source and at least one column.' });
+        }
+        if (parsed.source !== 'ANIMAL') {
+            const allowed = await laboratoryAllowsPaidFeatures(lab.laboratoryId);
+            if (!allowed) {
+                return res.status(403).json({ success: false, message: PAID_FEATURE_MESSAGE });
+            }
         }
         const result = await runReport(lab.laboratoryId, parsed.source, parsed.columns, parsed.statusFilter);
         return res.status(200).json({ success: true, data: result });
@@ -212,5 +219,36 @@ export const openReportDefinition = async (req: Request, res: Response) => {
     } catch (error) {
         console.error('Error opening report:', error);
         return res.status(500).json({ success: false, message: 'Failed to open report' });
+    }
+};
+
+function csvCell(value: string) {
+    if (/[",\n]/.test(value)) return `"${value.replace(/"/g, '""')}"`;
+    return value;
+}
+
+export const exportReport = async (req: Request, res: Response) => {
+    try {
+        const { userId, labId } = req.params;
+        const lab = await loadLaboratoryIdForActiveUser(userId, labId);
+        if (!lab) {
+            return res.status(403).json({ success: false, message: 'Access denied to this laboratory' });
+        }
+        const parsed = parseRunRequest(req.body);
+        if (!parsed) {
+            return res.status(400).json({ success: false, message: 'Choose a source and at least one column.' });
+        }
+        const result = await runReport(lab.laboratoryId, parsed.source, parsed.columns, parsed.statusFilter);
+        const header = result.columns.map((column) => csvCell(column.label)).join(',');
+        const lines = result.rows.map((row) => result.columns.map((column) => csvCell(row[column.key] ?? '')).join(','));
+        const rawName = typeof req.body?.name === 'string' ? req.body.name.trim() : '';
+        const filename = `${(rawName || 'report').toLowerCase().replace(/\s+/g, '-')}.csv`;
+        return res.status(200).json({
+            success: true,
+            data: { filename, csv: [header, ...lines].join('\n') },
+        });
+    } catch (error) {
+        console.error('Error exporting report:', error);
+        return res.status(500).json({ success: false, message: 'Failed to export report' });
     }
 };
