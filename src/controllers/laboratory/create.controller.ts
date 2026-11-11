@@ -1,10 +1,27 @@
 import type { Request, Response } from 'express';
 import { AccessStatus, Role, SubscriptionStatus } from '@prisma/client';
 import { ensureFreePlan } from '../../lib/free-plan.js';
+import { useCaller } from '../../middleware/require-user.js';
 import { prismaClient } from '../../lib/prisma.js';
 
+function text(value: unknown) {
+    return typeof value === 'string' ? value.trim() : '';
+}
+
 export const createLaboratory = async (req: Request, res: Response) => {
-    const { userId, name, ...labData } = req.body;
+    const userId = useCaller(req, res, req.body?.userId);
+    if (!userId) return;
+
+    const name = text(req.body?.name);
+    const username = text(req.body?.username);
+    const position = text(req.body?.position);
+    const description = text(req.body?.description);
+    if (!name || !username || !position) {
+        return res.status(400).json({
+            success: false,
+            message: 'Name, username, and position are required.',
+        });
+    }
 
     let freePlan: { id: string; maxUsers: number };
     try {
@@ -43,16 +60,16 @@ export const createLaboratory = async (req: Request, res: Response) => {
         });
 
         if (existingLab) {
-            return res.status(200).json({
+            return res.status(409).json({
                 success: false,
                 message: 'You already have a laboratory with this name!',
             });
         }
     } catch (error) {
         console.error('Error checking existing laboratory:', error);
-        return res.status(200).json({
+        return res.status(500).json({
             success: false,
-            message: 'You already have a laboratory with this name!',
+            message: 'Failed to create laboratory',
         });
     }
 
@@ -64,7 +81,9 @@ export const createLaboratory = async (req: Request, res: Response) => {
         const laboratory = await prismaClient.laboratory.create({
             data: {
                 name,
-                ...labData,
+                username,
+                position,
+                description: description || null,
                 users: {
                     create: {
                         userId,
@@ -94,7 +113,6 @@ export const createLaboratory = async (req: Request, res: Response) => {
         res.status(500).json({
             success: false,
             message: 'Failed to create laboratory',
-            error: error instanceof Error ? error.message : 'Unknown error',
         });
     }
 };

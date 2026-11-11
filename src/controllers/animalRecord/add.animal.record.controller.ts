@@ -1,4 +1,6 @@
 import { prismaClient } from '../../lib/prisma.js';
+import { useCaller } from '../../middleware/require-user.js';
+import { AccessStatus } from '@prisma/client';
 import { Request, Response } from 'express';
 
 const animalRecordClient = prismaClient;
@@ -20,6 +22,40 @@ export const addAnimalRecord = async (req: Request, res: Response) => {
             waterIntake,
             weight,
         } = req.body;
+
+        const userId = useCaller(req, res, createdById);
+        if (!userId) return;
+        if (typeof animalId !== 'string' || animalId.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Animal is required',
+            });
+        }
+
+        const animal = await animalRecordClient.animal.findUnique({
+            where: { id: animalId },
+            select: { laboratoryId: true },
+        });
+        if (!animal) {
+            return res.status(404).json({
+                success: false,
+                message: 'Animal not found',
+            });
+        }
+        const membership = await animalRecordClient.userLaboratory.findFirst({
+            where: {
+                userId,
+                laboratoryId: animal.laboratoryId,
+                accessStatus: AccessStatus.ACTIVE,
+            },
+            select: { id: true },
+        });
+        if (!membership) {
+            return res.status(403).json({
+                success: false,
+                message: 'Access denied to this laboratory',
+            });
+        }
 
         let resolvedExperimentId: string | undefined;
         if (experimentId != null && experimentId !== '') {
@@ -44,7 +80,7 @@ export const addAnimalRecord = async (req: Request, res: Response) => {
             data: {
                 activityLevel,
                 animalId,
-                createdById,
+                createdById: userId,
                 ...(resolvedExperimentId ? { experimentId: resolvedExperimentId } : {}),
                 ...(date ? { date: new Date(date) } : {}),
                 feedIntake,

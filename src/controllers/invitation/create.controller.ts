@@ -10,6 +10,7 @@ import sendInvitationLink from '../../services/email/invitation.service.js';
 import { ensureFreePlan } from '../../lib/free-plan.js';
 import { frontendOrigin } from '../../lib/frontend-origin.js';
 import { inviteExceedsPlan, planUserLimitMessage } from '../../lib/laboratory-seat-limit.js';
+import { useCaller } from '../../middleware/require-user.js';
 import { normalizeEmail } from '../../lib/normalize-email.js';
 import { prismaClient } from '../../lib/prisma.js';
 import { createRawToken, hashToken } from '../../lib/token-hash.js';
@@ -24,7 +25,8 @@ function isRole(value: unknown): value is Role {
 export const createInvitation = async (req: Request, res: Response) => {
     try {
         const email = normalizeEmail(req.body?.email);
-        const invitedBy = typeof req.body?.invitedBy === 'string' ? req.body.invitedBy : '';
+        const invitedBy = useCaller(req, res, req.body?.invitedBy);
+        if (!invitedBy) return;
         const labName = typeof req.body?.labId === 'string' ? req.body.labId.trim() : '';
         const role = req.body?.role;
         const name = splitFullName(req.body?.fullName);

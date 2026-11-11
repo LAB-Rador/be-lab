@@ -23,7 +23,6 @@ export const getAnimalEnums = async (req: Request, res: Response) => {
         res.status(500).json({
             success: false,
             message: 'Failed to fetch animal enums',
-            error: error instanceof Error ? error.message : 'Unknown error'
         });
     }
 }; 

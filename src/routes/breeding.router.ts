@@ -2,9 +2,12 @@ import { createBreedingProtocol, deleteBreedingProtocol, listBreedingProtocols, 
 import { createBreeding } from '../controllers/breeding/create.controller.js';
 import { createLitter } from '../controllers/breeding/litter.controller.js';
 import { listBreedings } from '../controllers/breeding/list.controller.js';
+import { rejectForeignUserParam } from '../middleware/require-user.js';
 import { Router } from 'express';
 
 const breedingRouter = Router();
+
+rejectForeignUserParam(breedingRouter, 'userId');
 
 breedingRouter.get('/:userId/:labId/protocols', listBreedingProtocols);
 breedingRouter.post('/:userId/:labId/protocols', createBreedingProtocol);

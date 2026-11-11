@@ -1,4 +1,5 @@
 import { Sex, AnimalStatus, AnimalType, FieldType, AccessStatus } from '@prisma/client';
+import { useCaller } from '../../middleware/require-user.js';
 import { prismaClient } from '../../lib/prisma.js';
 import { Request, Response } from 'express';
 
@@ -27,10 +28,13 @@ export const addAnimal = async (req: Request, res: Response) => {
             strain,
             status,
             origin,
-            userId,
+            userId: claimedUserId,
             name,
             sex,
         } = req.body;
+
+        const userId = useCaller(req, res, claimedUserId);
+        if (!userId) return;
 
         // Check required fields
         if (!identifier || !laboratoryId) {
@@ -213,7 +217,6 @@ export const addAnimal = async (req: Request, res: Response) => {
         res.status(500).json({
             success: false,
             message: 'Failed to create animal',
-            error: error instanceof Error ? error.message : 'Unknown error'
         });
     }
 };

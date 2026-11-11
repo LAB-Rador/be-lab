@@ -12,6 +12,8 @@ import publicRouter from './routes/public.router.js';
 import taskRouter from './routes/task.router.js';
 import userRouter from './routes/user.router.js';
 import authRouter from './routes/auth.router.js';
+import { getAnimalEnums } from './controllers/animal/animal-enums.controller.js';
+import { requireUser } from './middleware/require-user.js';
 import { prismaClient } from './lib/prisma.js';
 import express from 'express';
 import cors from 'cors';
@@ -53,19 +55,21 @@ app.get('/health', (req, res) => {
     res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
-app.use('/api/subscriptions', subscriptionRouter);
-app.use('/api/reports', reportRouter);
-app.use('/api/laboratories', userLaboratoryRouter);
-app.use('/api/animal-records', animalRecordRouter);
-app.use('/api/experiments', experimentRouter);
-app.use('/api/breedings', breedingRouter);
-app.use('/api/laboratory', laboratoryRouter);
-app.use('/api/invitation', invitationRouter);
-app.use('/api/animals', animalRouter);
-app.use('/api/cages', cageRouter);
+app.get('/api/animals/enums', getAnimalEnums);
+
+app.use('/api/subscriptions', requireUser, subscriptionRouter);
+app.use('/api/reports', requireUser, reportRouter);
+app.use('/api/laboratories', requireUser, userLaboratoryRouter);
+app.use('/api/animal-records', requireUser, animalRecordRouter);
+app.use('/api/experiments', requireUser, experimentRouter);
+app.use('/api/breedings', requireUser, breedingRouter);
+app.use('/api/laboratory', requireUser, laboratoryRouter);
+app.use('/api/invitation', requireUser, invitationRouter);
+app.use('/api/animals', requireUser, animalRouter);
+app.use('/api/cages', requireUser, cageRouter);
 app.use('/api/public', publicRouter);
-app.use('/api/tasks', taskRouter);
-app.use('/api/users', userRouter);
+app.use('/api/tasks', requireUser, taskRouter);
+app.use('/api/users', requireUser, userRouter);
 app.use('/api/auth', authRouter);
 
 // 404 handler

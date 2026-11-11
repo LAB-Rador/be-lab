@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { rejectForeignUserParam } from '../middleware/require-user.js';
 import { getAllPendingTasks } from '../controllers/task/task.controller.js';
 import {
     createLaboratoryTask,
@@ -9,6 +10,8 @@ import {
 } from '../controllers/task/laboratory.tasks.controller.js';
 
 const taskRouter = Router();
+
+rejectForeignUserParam(taskRouter, 'userId');
 
 taskRouter.get('/laboratory/:userId/:labId', getPaginatedLaboratoryTasks);
 taskRouter.post('/laboratory/:userId/:labId', createLaboratoryTask);

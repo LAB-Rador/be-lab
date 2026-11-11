@@ -49,7 +49,6 @@ export const getUserNotifications = async (req: Request, res: Response) => {
         res.status(500).json({
             success: false,
             message: 'Failed to fetch notifications',
-            error: error instanceof Error ? error.message : 'Unknown error',
         });
     }
 };
@@ -90,7 +89,6 @@ export const patchNotificationRead = async (req: Request, res: Response) => {
         res.status(500).json({
             success: false,
             message: 'Failed to update notification',
-            error: error instanceof Error ? error.message : 'Unknown error',
         });
     }
 };

@@ -6,9 +6,12 @@ import {
     previewReport,
     updateReportDefinition,
 } from '../controllers/report/report.definition.controller.js';
+import { rejectForeignUserParam } from '../middleware/require-user.js';
 import { Router } from 'express';
 
 const reportRouter = Router();
+
+rejectForeignUserParam(reportRouter, 'userId');
 
 reportRouter.get('/:userId/:labId', listReportDefinitions);
 reportRouter.post('/:userId/:labId/preview', previewReport);
