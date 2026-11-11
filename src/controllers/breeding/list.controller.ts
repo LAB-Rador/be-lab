@@ -1,3 +1,4 @@
+import { laboratoryAllowsPaidFeatures } from '../../lib/paid-access.js';
 import { loadLaboratoryIdForActiveUser } from '../../lib/load-laboratory-for-active-user.js';
 import { pedigreeAnimalSelect, toPedigreeAnimal } from '../../lib/pedigree-animal.js';
 import { prismaClient } from '../../lib/prisma.js';
@@ -11,6 +12,7 @@ export const listBreedings = async (req: Request, res: Response) => {
             return res.status(403).json({ success: false, message: 'Access denied to this laboratory' });
         }
         const laboratoryId = lab.laboratoryId;
+        const paidFeatures = await laboratoryAllowsPaidFeatures(laboratoryId);
 
         const breedings = await prismaClient.breeding.findMany({
             where: {
@@ -25,10 +27,12 @@ export const listBreedings = async (req: Request, res: Response) => {
                 mother: { select: pedigreeAnimalSelect },
                 father: { select: pedigreeAnimalSelect },
                 offspring: { select: pedigreeAnimalSelect },
-                litters: {
-                    orderBy: { bornDate: 'desc' },
-                    select: { id: true, bornDate: true, count: true, notes: true },
-                },
+                litters: paidFeatures
+                    ? {
+                        orderBy: { bornDate: 'desc' },
+                        select: { id: true, bornDate: true, count: true, notes: true },
+                    }
+                    : false,
             },
         });
 
@@ -42,7 +46,7 @@ export const listBreedings = async (req: Request, res: Response) => {
             mother: toPedigreeAnimal(breeding.mother),
             father: toPedigreeAnimal(breeding.father),
             offspring: breeding.offspring.map(toPedigreeAnimal),
-            litters: breeding.litters,
+            litters: paidFeatures ? breeding.litters : [],
         }));
 
         return res.status(200).json({ success: true, data });

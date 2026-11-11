@@ -1,3 +1,4 @@
+import { subscriptionAllowsPaidFeatures } from '../../lib/paid-access.js';
 import { loadLaboratoryIdForActiveUser } from '../../lib/load-laboratory-for-active-user.js';
 import { ensureFreePlan } from '../../lib/free-plan.js';
 import { AccessStatus } from '@prisma/client';
@@ -43,7 +44,11 @@ export const getLaboratorySubscription = async (req: Request, res: Response) => 
 
         return res.status(200).json({
             success: true,
-            data: { memberCount, subscription },
+            data: {
+                memberCount,
+                subscription,
+                paidFeatures: subscriptionAllowsPaidFeatures(subscription),
+            },
         });
     } catch (error) {
         console.error('Error fetching laboratory subscription:', error);

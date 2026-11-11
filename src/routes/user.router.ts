@@ -1,6 +1,7 @@
 import { Router } from 'express';
 
 import { rejectForeignUserParam } from '../middleware/require-user.js';
+import { requirePaidPlan } from '../middleware/require-paid-plan.js';
 import {
     getUserById,
     updateProfile,
@@ -14,8 +15,8 @@ const userRouter = Router();
 
 rejectForeignUserParam(userRouter, 'id');
 
-userRouter.get('/:id/notifications', getUserNotifications);
-userRouter.patch('/:id/notifications/:notificationId/read', patchNotificationRead);
+userRouter.get('/:id/notifications', requirePaidPlan, getUserNotifications);
+userRouter.patch('/:id/notifications/:notificationId/read', requirePaidPlan, patchNotificationRead);
 userRouter.get('/:id', getUserById);
 userRouter.put('/:id/profile', updateProfile);
 

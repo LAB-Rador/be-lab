@@ -16,26 +16,27 @@ import {
     updateExperimentTask,
 } from '../controllers/experiment/experiment.tasks.controller.js';
 import { rejectForeignUserParam } from '../middleware/require-user.js';
+import { requirePaidPlan } from '../middleware/require-paid-plan.js';
 import { Router } from 'express';
 
 const experimentRouter = Router();
 
 rejectForeignUserParam(experimentRouter, 'userId');
 
-experimentRouter.patch('/unique/:userId/:labId/:experimentId/tasks/:taskId/status', patchExperimentTaskStatus);
-experimentRouter.delete('/:userId/:labId/:experimentId/members/:targetUserId', removeExperimentMember);
-experimentRouter.delete('/:userId/:labId/:experimentId/animals/:animalId', removeExperimentAnimal);
-experimentRouter.delete('/unique/:userId/:labId/:experimentId/tasks/:taskId', deleteExperimentTask);
-experimentRouter.put('/unique/:userId/:labId/:experimentId/tasks/:taskId', updateExperimentTask);
-experimentRouter.get('/unique/:userId/:labId/:experimentId/records', getExperimentAnimalRecords);
-experimentRouter.get('/unique/:userId/:labId/:experimentId/tasks', getPaginatedExperimentTasks);
-experimentRouter.get('/unique/:userId/:labId/:experimentId/metrics', getExperimentMetrics);
-experimentRouter.post('/unique/:userId/:labId/:experimentId/tasks', createExperimentTask);
-experimentRouter.get('/unique/:userId/:labId/:experimentId', getUniqueExperimentById);
-experimentRouter.post('/:userId/:labId/:experimentId/unarchive', unarchiveExperiment);
-experimentRouter.post('/:userId/:labId/:experimentId/members', addExperimentMember);
-experimentRouter.post('/:userId/:labId/:experimentId/animals', addExperimentAnimal);
-experimentRouter.post('/:userId/:labId/:experimentId/archive', archiveExperiment);
-experimentRouter.get('/:userId/:labId', getAllExperiments);
-experimentRouter.post('/experiment', createExperiment);
+experimentRouter.patch('/unique/:userId/:labId/:experimentId/tasks/:taskId/status', requirePaidPlan, patchExperimentTaskStatus);
+experimentRouter.delete('/:userId/:labId/:experimentId/members/:targetUserId', requirePaidPlan, removeExperimentMember);
+experimentRouter.delete('/:userId/:labId/:experimentId/animals/:animalId', requirePaidPlan, removeExperimentAnimal);
+experimentRouter.delete('/unique/:userId/:labId/:experimentId/tasks/:taskId', requirePaidPlan, deleteExperimentTask);
+experimentRouter.put('/unique/:userId/:labId/:experimentId/tasks/:taskId', requirePaidPlan, updateExperimentTask);
+experimentRouter.get('/unique/:userId/:labId/:experimentId/records', requirePaidPlan, getExperimentAnimalRecords);
+experimentRouter.get('/unique/:userId/:labId/:experimentId/tasks', requirePaidPlan, getPaginatedExperimentTasks);
+experimentRouter.get('/unique/:userId/:labId/:experimentId/metrics', requirePaidPlan, getExperimentMetrics);
+experimentRouter.post('/unique/:userId/:labId/:experimentId/tasks', requirePaidPlan, createExperimentTask);
+experimentRouter.get('/unique/:userId/:labId/:experimentId', requirePaidPlan, getUniqueExperimentById);
+experimentRouter.post('/:userId/:labId/:experimentId/unarchive', requirePaidPlan, unarchiveExperiment);
+experimentRouter.post('/:userId/:labId/:experimentId/members', requirePaidPlan, addExperimentMember);
+experimentRouter.post('/:userId/:labId/:experimentId/animals', requirePaidPlan, addExperimentAnimal);
+experimentRouter.post('/:userId/:labId/:experimentId/archive', requirePaidPlan, archiveExperiment);
+experimentRouter.get('/:userId/:labId', requirePaidPlan, getAllExperiments);
+experimentRouter.post('/experiment', requirePaidPlan, createExperiment);
 export default experimentRouter;
