@@ -62,32 +62,30 @@ export const deleteLaboratoryMember = async (req: Request, res: Response) => {
             });
         }
 
-        // Удаляем участника из лаборатории
-        await prismaClient.userLaboratory.delete({
-            where: {
-                id: memberToDelete.id
-            }
-        });
-
-        const invitationToDelete = await prismaClient.invitation.findFirst({
-            where: {
-                laboratoryId: ownerLaboratory.laboratory.id,
-                email: memberToDelete.user.email
-            }
-        })
-
-        if (!invitationToDelete) {
-            return res.status(404).json({
-                success: false,
-                message: 'Member not found in this invitation list'
+        await prismaClient.$transaction(async (tx) => {
+            await tx.userLaboratory.delete({
+                where: {
+                    id: memberToDelete.id
+                }
             });
-        }
 
-        await prismaClient.invitation.delete({
-            where: {
-                id: invitationToDelete.id
+            const invitationToDelete = await tx.invitation.findFirst({
+                where: {
+                    laboratoryId: ownerLaboratory.laboratory.id,
+                    email: memberToDelete.user.email
+                }
+            });
+
+            if (!invitationToDelete) {
+                return;
             }
-        })
+
+            await tx.invitation.delete({
+                where: {
+                    id: invitationToDelete.id
+                }
+            });
+        });
 
         return res.status(200).json({
             success: true,
