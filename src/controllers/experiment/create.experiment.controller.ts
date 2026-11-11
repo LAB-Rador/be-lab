@@ -1,14 +1,17 @@
 import { prismaClient } from '../../lib/prisma.js';
+import { useCaller } from '../../middleware/require-user.js';
 import { AccessStatus } from '@prisma/client';
 import { Request, Response } from 'express';
 
 export const createExperiment = async (req: Request, res: Response) => {
     try {
         const { title, description, laboratoryId, startDate, endDate, status, createdById, protocol } = req.body;
+        const callerId = useCaller(req, res, createdById);
+        if (!callerId) return;
 
         const userLaboratory = await prismaClient.userLaboratory.findFirst({
             where: {
-                userId: createdById,
+                userId: callerId,
                 accessStatus: AccessStatus.ACTIVE,
                 laboratory: {
                     name: laboratoryId
@@ -30,7 +33,7 @@ export const createExperiment = async (req: Request, res: Response) => {
             data: {
                 laboratoryId: userLaboratory.laboratory.id,
                 description: description,
-                createdById: createdById,
+                createdById: callerId,
                 startDate: startDate,
                 protocol: protocol,
                 endDate: endDate,
@@ -50,7 +53,6 @@ export const createExperiment = async (req: Request, res: Response) => {
         res.status(500).json({
             success: false,
             message: 'Failed to create experiment',
-            error: error instanceof Error ? error.message : 'Unknown error',
         });
     }
 }

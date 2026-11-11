@@ -15,9 +15,12 @@ import {
     patchExperimentTaskStatus,
     updateExperimentTask,
 } from '../controllers/experiment/experiment.tasks.controller.js';
+import { rejectForeignUserParam } from '../middleware/require-user.js';
 import { Router } from 'express';
 
 const experimentRouter = Router();
+
+rejectForeignUserParam(experimentRouter, 'userId');
 
 experimentRouter.patch('/unique/:userId/:labId/:experimentId/tasks/:taskId/status', patchExperimentTaskStatus);
 experimentRouter.delete('/:userId/:labId/:experimentId/members/:targetUserId', removeExperimentMember);

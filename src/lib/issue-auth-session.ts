@@ -20,7 +20,6 @@ export type AuthSession = {
     message: string;
     success: true;
     laboratory: UserLaboratory | null;
-    refreshToken: string;
     accessToken: string;
     user: {
         firstName: string | null;
@@ -55,7 +54,6 @@ export async function issueAuthSession(user: SessionUser): Promise<AuthSession> 
     };
 
     const accessToken = jwt.sign(payload, secret, { algorithm: 'RS256', expiresIn: '1d' });
-    const refreshToken = jwt.sign(payload, secret, { algorithm: 'RS256', expiresIn: '7d' });
 
     const laboratory = await prismaClient.userLaboratory.findFirst({
         where: { userId: user.id },
@@ -65,7 +63,6 @@ export async function issueAuthSession(user: SessionUser): Promise<AuthSession> 
         message: 'You have successfully logged in.',
         success: true,
         laboratory,
-        refreshToken,
         accessToken,
         user: {
             firstName: user.firstName,

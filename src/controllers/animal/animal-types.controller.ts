@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { prismaClient } from '../../lib/prisma.js';
+import { useCaller } from '../../middleware/require-user.js';
 import { AccessStatus } from '@prisma/client';
 
 export const getAnimalTypes = async (req: Request, res: Response) => {
@@ -58,13 +59,15 @@ export const getAnimalTypes = async (req: Request, res: Response) => {
         res.status(500).json({
             success: false,
             message: 'Failed to fetch animal types',
-            error: error instanceof Error ? error.message : 'Unknown error'
         });
     }
 };
 
 export const getAnimalTypeById = async (req: Request, res: Response) => {
     try {
+        const userId = useCaller(req, res);
+        if (!userId) return;
+
         const { animalTypeId } = req.params;
 
         const animalType = await prismaClient.animalType.findUnique({
@@ -98,6 +101,21 @@ export const getAnimalTypeById = async (req: Request, res: Response) => {
             });
         }
 
+        const membership = await prismaClient.userLaboratory.findFirst({
+            where: {
+                userId,
+                laboratoryId: animalType.laboratory.id,
+                accessStatus: AccessStatus.ACTIVE,
+            },
+            select: { id: true },
+        });
+        if (!membership) {
+            return res.status(403).json({
+                success: false,
+                message: 'Access denied to this laboratory',
+            });
+        }
+
         res.status(200).json({
             success: true,
             data: animalType
@@ -107,7 +125,6 @@ export const getAnimalTypeById = async (req: Request, res: Response) => {
         res.status(500).json({
             success: false,
             message: 'Failed to fetch animal type',
-            error: error instanceof Error ? error.message : 'Unknown error'
         });
     }
 }; 

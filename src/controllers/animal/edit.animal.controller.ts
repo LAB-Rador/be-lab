@@ -1,4 +1,5 @@
 import { Sex, AnimalStatus, AnimalType, FieldType, AccessStatus } from '@prisma/client';
+import { useCaller } from '../../middleware/require-user.js';
 import { prismaClient } from '../../lib/prisma.js';
 import { Request, Response } from 'express';
 
@@ -27,11 +28,14 @@ export const editAnimal = async (req: Request, res: Response) => {
             strain,
             status,
             origin,
-            userId,
+            userId: claimedUserId,
             name,
             sex,
             id,
         } = req.body;
+
+        const userId = useCaller(req, res, claimedUserId);
+        if (!userId) return;
 
         // Check required fields
         if (!identifier || !laboratoryId) {
@@ -222,7 +226,6 @@ export const editAnimal = async (req: Request, res: Response) => {
         res.status(500).json({
             success: false,
             message: 'Failed to update animal',
-            error: error instanceof Error ? error.message : 'Unknown error'
         });
     }
 };
