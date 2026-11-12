@@ -1,6 +1,6 @@
 import { loadLaboratoryIdForActiveUser } from '../../lib/load-laboratory-for-active-user.js';
 import { pedigreeAnimalSelect, toPedigreeAnimal } from '../../lib/pedigree-animal.js';
-import { BreedingStatus } from '@prisma/client';
+import { BreedingStatus, Sex } from '@prisma/client';
 import { prismaClient } from '../../lib/prisma.js';
 import { Request, Response } from 'express';
 
@@ -43,10 +43,18 @@ export const createBreeding = async (req: Request, res: Response) => {
         const animalIds = [...new Set([motherId, fatherId, ...offspringIds])];
         const animals = await prismaClient.animal.findMany({
             where: { id: { in: animalIds }, laboratoryId },
-            select: { id: true, animalTypeId: true },
+            select: { id: true, animalTypeId: true, sex: true },
         });
         if (animals.length !== animalIds.length) {
             return res.status(400).json({ success: false, message: 'Every animal must belong to this laboratory' });
+        }
+        const mother = animals.find((animal) => animal.id === motherId);
+        const father = animals.find((animal) => animal.id === fatherId);
+        if (!mother || !father || mother.sex !== Sex.FEMALE || father.sex !== Sex.MALE) {
+            return res.status(400).json({
+                success: false,
+                message: 'Mother must be female and father must be male',
+            });
         }
 
         const requestedProtocolId = typeof req.body.protocolId === 'string' ? req.body.protocolId.trim() : '';
@@ -59,8 +67,7 @@ export const createBreeding = async (req: Request, res: Response) => {
             if (!protocol) {
                 return res.status(400).json({ success: false, message: 'Unknown breeding protocol' });
             }
-            const mother = animals.find((animal) => animal.id === motherId);
-            if (protocol.animalTypeId !== mother?.animalTypeId) {
+            if (protocol.animalTypeId !== mother.animalTypeId) {
                 return res.status(400).json({ success: false, message: 'This protocol is for a different animal type.' });
             }
             protocolId = protocol.id;
