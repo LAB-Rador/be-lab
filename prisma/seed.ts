@@ -109,6 +109,7 @@ async function main() {
     const laboratory1 = await prisma.laboratory.create({
       data: {
         name: 'Лаборатория молекулярной биологии',
+        slug: 'molecular-biology',
         description: 'Исследования в области генетики и молекулярной биологии',
         username: 'director_molbio',
         position: 'Директор лаборатории',
@@ -117,6 +118,7 @@ async function main() {
     const laboratory2 = await prisma.laboratory.create({
       data: {
         name: 'Центр экспериментальной медицины',
+        slug: 'experimental-medicine',
         description: 'Доклинические исследования и разработка лекарственных препаратов',
         username: 'researcher_petrov',
         position: 'Старший исследователь',

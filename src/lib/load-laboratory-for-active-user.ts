@@ -3,13 +3,13 @@ import { prismaClient } from './prisma.js';
 
 export async function loadLaboratoryIdForActiveUser(
     userId: string,
-    labName: string,
+    labSlug: string,
 ): Promise<{ laboratoryId: string; laboratoryName: string } | null> {
     const row = await prismaClient.userLaboratory.findFirst({
         where: {
             userId,
             accessStatus: AccessStatus.ACTIVE,
-            laboratory: { name: labName },
+            laboratory: { slug: labSlug },
         },
         select: {
             laboratoryId: true,

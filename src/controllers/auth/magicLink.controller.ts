@@ -218,10 +218,7 @@ export const consumeMagicLink = async (req: Request, res: Response) => {
         return res.status(200).json({
             ...session,
             joinedLaboratory: result.joinedLaboratory
-                ? {
-                    id: result.joinedLaboratory.id,
-                    name: result.joinedLaboratory.name,
-                }
+                ? { slug: result.joinedLaboratory.slug }
                 : null,
         });
     } catch (error) {
