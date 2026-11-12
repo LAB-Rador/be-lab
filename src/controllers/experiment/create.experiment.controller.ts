@@ -14,7 +14,7 @@ export const createExperiment = async (req: Request, res: Response) => {
                 userId: callerId,
                 accessStatus: AccessStatus.ACTIVE,
                 laboratory: {
-                    name: laboratoryId
+                    slug: laboratoryId
                 }
             },
             include: {

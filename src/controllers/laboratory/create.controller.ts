@@ -1,5 +1,6 @@
 import type { Request, Response } from 'express';
 import { AccessStatus, Role, SubscriptionStatus } from '@prisma/client';
+import { allocateLaboratorySlug } from '../../lib/laboratory-slug.js';
 import { ensureFreePlan } from '../../lib/free-plan.js';
 import { useCaller } from '../../middleware/require-user.js';
 import { prismaClient } from '../../lib/prisma.js';
@@ -78,9 +79,11 @@ export const createLaboratory = async (req: Request, res: Response) => {
         const endDate = new Date(startDate);
         endDate.setFullYear(endDate.getFullYear() + 1);
 
+        const slug = await allocateLaboratorySlug(name);
         const laboratory = await prismaClient.laboratory.create({
             data: {
                 name,
+                slug,
                 username,
                 position,
                 description: description || null,

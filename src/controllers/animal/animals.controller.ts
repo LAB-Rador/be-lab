@@ -24,7 +24,7 @@ export const getAllAnimals = async (req: Request, res: Response) => {
                 userId: userId,
                 accessStatus: AccessStatus.ACTIVE,
                 laboratory: {
-                    name: labId
+                    slug: labId
                 }
             },
             include: {

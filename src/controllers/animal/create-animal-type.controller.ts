@@ -15,13 +15,13 @@ export const createAnimalType = async (req: Request, res: Response) => {
             });
         }
 
-        // Check if user has access to this laboratory (labId is laboratory name)
+        // labId is the laboratory slug
         const userLaboratory = await prismaClient.userLaboratory.findFirst({
             where: {
                 userId: userId,
                 accessStatus: AccessStatus.ACTIVE,
                 laboratory: {
-                    name: labId // labId это имя лаборатории
+                    slug: labId
                 }
             },
             include: {

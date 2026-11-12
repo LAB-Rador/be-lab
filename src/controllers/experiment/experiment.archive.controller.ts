@@ -5,7 +5,7 @@ import { Request, Response } from 'express';
 const accessWhere = (userId: string, labId: string, experimentId: string) => ({
     id: experimentId,
     laboratory: {
-        name: labId,
+        slug: labId,
         users: {
             some: {
                 userId: userId,

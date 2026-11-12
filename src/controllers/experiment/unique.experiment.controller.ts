@@ -11,7 +11,7 @@ const memberInclude = (labId: string) => ({
             lastName: true,
             laboratories: {
                 where: {
-                    laboratory: { name: labId },
+                    laboratory: { slug: labId },
                 },
                 select: { role: true },
             },
@@ -27,7 +27,7 @@ export const getUniqueExperimentById = async (req: Request, res: Response) => {
             where: {
                 id: experimentId,
                 laboratory: {
-                    name: labId,
+                    slug: labId,
                     users: {
                         some: {
                             userId: userId,

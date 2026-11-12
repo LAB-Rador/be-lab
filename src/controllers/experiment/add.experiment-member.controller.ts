@@ -19,7 +19,7 @@ export const addExperimentMember = async (req: Request, res: Response) => {
             where: {
                 id: experimentId,
                 laboratory: {
-                    name: labId,
+                    slug: labId,
                     users: {
                         some: {
                             userId,
@@ -74,7 +74,7 @@ export const addExperimentMember = async (req: Request, res: Response) => {
                         firstName: true,
                         lastName: true,
                         laboratories: {
-                            where: { laboratory: { name: labId } },
+                            where: { laboratory: { slug: labId } },
                             select: { role: true },
                         },
                     },

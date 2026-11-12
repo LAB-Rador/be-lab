@@ -52,7 +52,7 @@ export const createInvitation = async (req: Request, res: Response) => {
             where: {
                 userId: invitedBy,
                 accessStatus: AccessStatus.ACTIVE,
-                laboratory: { name: labName },
+                laboratory: { slug: labName },
             },
             include: { laboratory: true },
         });

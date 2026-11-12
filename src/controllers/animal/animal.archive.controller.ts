@@ -7,7 +7,7 @@ async function labIdForUser(userId: string, labName: string) {
         where: {
             userId,
             accessStatus: AccessStatus.ACTIVE,
-            laboratory: { name: labName },
+            laboratory: { slug: labName },
         },
         select: { laboratory: { select: { id: true } } },
     });

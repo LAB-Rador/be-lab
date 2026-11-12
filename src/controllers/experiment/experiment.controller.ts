@@ -12,7 +12,7 @@ export const getAllExperiments = async (req: Request, res: Response) => {
         const experiments = await experimentClient.findMany({
             where: {
                 laboratory: {
-                    name: labId,
+                    slug: labId,
                     users: {
                         some: {
                             userId: userId,

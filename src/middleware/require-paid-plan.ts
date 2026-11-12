@@ -10,7 +10,7 @@ function text(value: unknown) {
     return trimmed.length > 0 ? trimmed : null;
 }
 
-function laboratoryName(req: Request) {
+function laboratorySlug(req: Request) {
     const body = req.body as { laboratoryId?: unknown } | undefined;
     return text(req.params.labId) ?? text(req.query.labId) ?? text(body?.laboratoryId);
 }
@@ -22,13 +22,13 @@ export function requirePaidPlan(req: Request, res: Response, next: NextFunction)
         return;
     }
 
-    const labName = laboratoryName(req);
-    if (!labName) {
+    const labSlug = laboratorySlug(req);
+    if (!labSlug) {
         res.status(400).json({ success: false, message: 'Missing laboratory' });
         return;
     }
 
-    loadLaboratoryIdForActiveUser(userId, labName)
+    loadLaboratoryIdForActiveUser(userId, labSlug)
         .then(async (lab) => {
             if (!lab) {
                 res.status(403).json({ success: false, message: 'Access denied to this laboratory' });

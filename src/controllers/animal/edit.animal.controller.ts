@@ -56,7 +56,7 @@ export const editAnimal = async (req: Request, res: Response) => {
         // Check if laboratory exists
         const laboratory = await prismaClient.laboratory.findFirst({
             where: {
-                name: laboratoryId,
+                slug: laboratoryId,
                 users: {
                     some:   {
                         userId: userId,

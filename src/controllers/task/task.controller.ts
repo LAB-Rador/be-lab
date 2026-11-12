@@ -11,7 +11,7 @@ export const getAllPendingTasks = async (req: Request, res: Response) => {
         const tasks = await taskClient.findMany({
             where: {
                 laboratory: {
-                    name: labId,
+                    slug: labId,
                     users: {
                         some: {
                             userId: userId,

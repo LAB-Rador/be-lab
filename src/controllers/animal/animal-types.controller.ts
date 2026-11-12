@@ -7,13 +7,13 @@ export const getAnimalTypes = async (req: Request, res: Response) => {
     try {
         const { labId, userId } = req.params;
 
-        // Check if user has access to this laboratory (labId is laboratory name)
+        // labId is the laboratory slug
         const userLaboratory = await prismaClient.userLaboratory.findFirst({
             where: {
                 userId: userId,
                 accessStatus: AccessStatus.ACTIVE,
                 laboratory: {
-                    name: labId // labId это имя лаборатории
+                    slug: labId
                 }
             },
             include: {

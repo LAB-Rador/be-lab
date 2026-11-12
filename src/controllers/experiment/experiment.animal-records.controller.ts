@@ -13,7 +13,7 @@ export const getExperimentAnimalRecords = async (req: Request, res: Response) =>
             where: {
                 id: experimentId,
                 laboratory: {
-                    name: labId,
+                    slug: labId,
                     users: {
                         some: {
                             userId: userId,

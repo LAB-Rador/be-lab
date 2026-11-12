@@ -13,7 +13,7 @@ export const deleteLaboratoryMember = async (req: Request, res: Response) => {
                 accessStatus: AccessStatus.ACTIVE,
                 role: Role.OWNER,
                 laboratory: {
-                    name: labId
+                    slug: labId
                 }
             },
             include: {

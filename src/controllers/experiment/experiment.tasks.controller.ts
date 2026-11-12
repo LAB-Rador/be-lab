@@ -23,7 +23,7 @@ async function loadExperimentWithAccessGate(
         where: {
             id: experimentId,
             laboratory: {
-                name: labId,
+                slug: labId,
                 users: {
                     some: {
                         userId,

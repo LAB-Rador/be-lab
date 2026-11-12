@@ -63,6 +63,7 @@ model Payment {
 model Laboratory {
   id            String           @id @default(uuid())
   name          String
+  slug          String           @unique
   username      String
   position      String
   description   String?
