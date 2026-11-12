@@ -6,6 +6,7 @@ import { getAnimalGenealogy } from '../controllers/breeding/genealogy.controller
 import { getUniqueAnimalById } from '../controllers/animal/get.unique.animal.byId.js';
 import { archiveAnimal, unarchiveAnimal } from '../controllers/animal/animal.archive.controller.js';
 import { editAnimal } from '../controllers/animal/edit.animal.controller.js';
+import { getAnimalSummary } from '../controllers/animal/animal.summary.controller.js';
 import { getAllAnimals } from '../controllers/animal/animals.controller.js';
 import { addAnimal } from '../controllers/animal/add.animal.controller.js';
 import { Router } from 'express';
@@ -19,6 +20,7 @@ animalRouter.post('/animal/:userId/:labId/:animalId/archive', archiveAnimal);
 animalRouter.get('/animal/:userId/:labId/:animalId/genealogy', getAnimalGenealogy);
 animalRouter.get('/animal/:userId/:labId/:animalId/:rows/:page', getUniqueAnimalById);
 
+animalRouter.get('/:userId/:labId/summary', getAnimalSummary);
 animalRouter.get('/:userId/:labId/:rows/:page/:filters', getAllAnimals);
 animalRouter.post('/', addAnimal);
 animalRouter.put('/', editAnimal);
