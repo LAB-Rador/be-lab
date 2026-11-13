@@ -21,7 +21,7 @@ animalRouter.get('/animal/:userId/:labId/:animalId/genealogy', getAnimalGenealog
 animalRouter.get('/animal/:userId/:labId/:animalId/:rows/:page', getUniqueAnimalById);
 
 animalRouter.get('/:userId/:labId/summary', getAnimalSummary);
-animalRouter.get('/:userId/:labId/:rows/:page/:filters', getAllAnimals);
+animalRouter.get('/:userId/:labId/:rows/:page', getAllAnimals);
 animalRouter.post('/', addAnimal);
 animalRouter.put('/', editAnimal);
 

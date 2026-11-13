@@ -6,13 +6,14 @@ const animalsClient = prismaClient.animal;
 
 export const getAllAnimals = async (req: Request, res: Response) => {
     try {
-        const { userId, labId, rows, page, filters } = req.params;
+        const { userId, labId, rows, page } = req.params;
         const rowsNumber = parseInt(rows);
         const pageNumber = parseInt(page);
+        const rawFilters = req.query.filters;
         let parsedFilters = null;
-        if (filters && filters !== 'null' && filters !== 'undefined') {
+        if (typeof rawFilters === 'string') {
             try {
-                parsedFilters = JSON.parse(decodeURIComponent(filters));
+                parsedFilters = JSON.parse(rawFilters);
             } catch (error) {
                 console.error('Error parsing filters:', error);
             }
