@@ -1,3 +1,5 @@
+import { appendFile, mkdir } from 'node:fs/promises';
+import path from 'node:path';
 import { Resend } from 'resend';
 import { escapeHtml } from './html-escape.js';
 
@@ -14,6 +16,17 @@ type ActionLinkEmail = {
 };
 
 export async function sendActionLinkEmail(input: ActionLinkEmail): Promise<void> {
+    const inbox = process.env.E2E_INBOX_DIR?.trim();
+    if (inbox) {
+        await mkdir(inbox, { recursive: true });
+        await appendFile(path.join(inbox, 'messages.jsonl'), `${JSON.stringify({
+            to: input.to,
+            subject: input.subject,
+            url: input.url,
+        })}\n`);
+        return;
+    }
+
     const href = escapeHtml(input.url);
     await resend.emails.send({
         from: 'noreply@labradorassist.app',

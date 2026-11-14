@@ -1,0 +1,93 @@
+import subscriptionRouter from './routes/subscription.router.js';
+import reportRouter from './routes/report.router.js';
+import userLaboratoryRouter from './routes/userLaboratory.router.js';
+import animalRecordRouter from './routes/animalRecord.router.js';
+import laboratoryRouter from './routes/laboratory.router.js';
+import experimentRouter from './routes/experiment.router.js';
+import breedingRouter from './routes/breeding.router.js';
+import invitationRouter from './routes/invitation.router.js';
+import animalRouter from './routes/animal.router.js';
+import cageRouter from './routes/cage.router.js';
+import publicRouter from './routes/public.router.js';
+import taskRouter from './routes/task.router.js';
+import userRouter from './routes/user.router.js';
+import authRouter from './routes/auth.router.js';
+import { getAnimalEnums } from './controllers/animal/animal-enums.controller.js';
+import { requireUser } from './middleware/require-user.js';
+import express from 'express';
+import cors from 'cors';
+
+const app = express();
+
+const allowedOrigins = process.env.FRONTEND_URL
+    ? process.env.FRONTEND_URL
+    : [
+        'https://lab-rador-assist.vercel.app',
+        'https://labradorassist.app',
+    ];
+
+const corsOptions = {
+    origin: allowedOrigins,
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: [
+        'Content-Type',
+        'Authorization',
+        'X-Requested-With',
+        'Accept',
+        'Origin',
+    ],
+    preflightContinue: false,
+    optionsSuccessStatus: 200,
+};
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
+
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+app.get('/health', (req, res) => {
+    res.json({ status: 'OK', timestamp: new Date().toISOString() });
+});
+
+app.get('/api/animals/enums', getAnimalEnums);
+
+app.use('/api/subscriptions', requireUser, subscriptionRouter);
+app.use('/api/reports', requireUser, reportRouter);
+app.use('/api/laboratories', requireUser, userLaboratoryRouter);
+app.use('/api/animal-records', requireUser, animalRecordRouter);
+app.use('/api/experiments', requireUser, experimentRouter);
+app.use('/api/breedings', requireUser, breedingRouter);
+app.use('/api/laboratory', requireUser, laboratoryRouter);
+app.use('/api/invitation', requireUser, invitationRouter);
+app.use('/api/animals', requireUser, animalRouter);
+app.use('/api/cages', requireUser, cageRouter);
+app.use('/api/public', publicRouter);
+app.use('/api/tasks', requireUser, taskRouter);
+app.use('/api/users', requireUser, userRouter);
+app.use('/api/auth', authRouter);
+
+app.use('*', (req, res) => {
+    res.status(404).json({ error: 'Route not found' });
+});
+
+app.use(
+    (
+        err: any,
+        req: express.Request,
+        res: express.Response,
+        next: express.NextFunction,
+    ) => {
+        console.error('Error:', err.message);
+        console.error('Stack:', err.stack);
+
+        if (err.message === 'Not allowed by CORS') {
+            res.status(403).json({ error: 'CORS policy violation' });
+        } else {
+            res.status(500).json({ error: 'Something went wrong!' });
+        }
+    },
+);
+
+export { app };
