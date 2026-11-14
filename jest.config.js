@@ -7,6 +7,9 @@ export default {
     }
   },
   testEnvironment: 'node',
+  maxWorkers: 1,
+  setupFiles: ['<rootDir>/tests/setup-env.cjs'],
+  setupFilesAfterEnv: ['<rootDir>/tests/setup-after.ts'],
   roots: ['<rootDir>/src', '<rootDir>/tests'],
   testMatch: [
     '**/__tests__/**/*.ts',

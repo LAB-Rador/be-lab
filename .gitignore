@@ -1,4 +1,6 @@
 node_modules
+.test-pg
+.e2e-inbox
 .vscode/
 .eslintcache
 .env
